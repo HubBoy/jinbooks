@@ -1,39 +1,83 @@
-# jinbooks
+# 概述
 
-#### 介绍
-{**以下是 Gitee 平台说明，您可以替换此简介**
-Gitee 是 OSCHINA 推出的基于 Git 的代码托管平台（同时支持 SVN）。专为开发者提供稳定、高效、安全的云端软件开发协作平台
-无论是个人、团队、或是企业，都能够用 Gitee 实现代码托管、项目管理、协作开发。企业项目请看 [https://gitee.com/enterprises](https://gitee.com/enterprises)}
+<b>JinBooks</b>财务记账系统，涵盖了财务记账的整个生命周期、功能齐全、实现记账无纸化办公，满足中小企业日常财务记账需求。财务人员录入凭证、日记账、员工管理等；月末自动结转；结账后自动生成资产负债表、利润表、现金流量表、科目余额表等；仪表盘统计让企业管理者对企业财务状况一览无余。
 
-#### 软件架构
-软件架构说明
+官方网站  <a href="http://www.jinbooks.com" target="_blank"><b>http://www.jinbooks.com</b></a> 
 
+付费服务支持或商务合作：
 
-#### 安装教程
-
-1.  xxxx
-2.  xxxx
-3.  xxxx
-
-#### 使用说明
-
-1.  xxxx
-2.  xxxx
-3.  xxxx
-
-#### 参与贡献
-
-1.  Fork 本仓库
-2.  新建 Feat_xxx 分支
-3.  提交代码
-4.  新建 Pull Request
+<img src="https://gitee.com/jinbooks/jinbooks/raw/main/images/weixin.jpg?raw=true" width="200px" />
 
 
-#### 特技
+ 
+# 产品功能
 
-1.  使用 Readme\_XXX.md 来支持不同的语言，例如 Readme\_en.md, Readme\_zh.md
-2.  Gitee 官方博客 [blog.gitee.com](https://blog.gitee.com)
-3.  你可以 [https://gitee.com/explore](https://gitee.com/explore) 这个地址来了解 Gitee 上的优秀开源项目
-4.  [GVP](https://gitee.com/gvp) 全称是 Gitee 最有价值开源项目，是综合评定出的优秀开源项目
-5.  Gitee 官方提供的使用手册 [https://gitee.com/help](https://gitee.com/help)
-6.  Gitee 封面人物是一档用来展示 Gitee 会员风采的栏目 [https://gitee.com/gitee-stars/](https://gitee.com/gitee-stars/)
+
+| 序号    | 功能    |  备注    | 
+| --------| :-----  |  :-----  | 
+| 1.1     | 账套管理        | 无限账套| 
+| 1.2     | 科目管理        |  资产、负债、共同、所有者权益、成本、损益类| 
+| 1.3     | 凭证管理        |  科目选择、辅助核算、借贷平衡测算、凭证字自动生成、凭证整理| 
+| 1.4     | 薪资管理        |  员工管理、薪资自动计算、计提/发放工资凭证| 
+| 1.5     | 日记账          |  账户管理、月末汇总| 
+| 1.6     | 结账            |   月末结转、结账、报表生成| 
+| 1.7     | 报表            |  资产负债表、利润表、现金流量表、科目余额表等| 
+
+
+# 界面
+
+### 账套管理
+<img src="https://gitee.com/jinbooks/jinbooks/raw/main/images/jinbooks_book.png?raw=true"/>
+
+
+### 科目管理
+<img src="https://gitee.com/jinbooks/jinbooks/raw/main/images/jinbooks_kemu.png?raw=true"/>
+
+### 仪表盘
+<img src="https://gitee.com/jinbooks/jinbooks/raw/main/images/jinbooks_dashbord.png?raw=true"/>
+
+### 凭证
+<img src="https://gitee.com/jinbooks/jinbooks/raw/main/images/jinbooks_pingzheng.png?raw=true"/>
+
+<img src="https://gitee.com/jinbooks/jinbooks/raw/main/images/jinbooks_pingzheng_gl.png?raw=true"/>
+
+### 报表
+#### 科目余额表
+<img src="https://gitee.com/jinbooks/jinbooks/raw/main/images/jinbooks_kemu.png?raw=true"/>
+
+#### 资产负债表
+<img src="https://gitee.com/jinbooks/jinbooks/raw/main/images/jinbooks_rpt_zcfz.png?raw=true"/>
+
+#### 利润表
+<img src="https://gitee.com/jinbooks/jinbooks/raw/main/images/jinbooks_rpt_lrb.png?raw=true"/>
+
+# 技术框架
+
+基于Java EE平台，采用Spring、MySQL、Tomcat等开源技术，具有良好扩展性。 
+
+## 后端技术
+
+| 框架                     | 说明            | 版本     |
+|------------------------|---------------|--------|
+| Spring Boot            | 系统框架             | 3.4.6 |
+| Mysql Connector        | 数据库驱动           | 8.4.0 |
+| Druid                  | JDBC 连接池、监控组件 |1.2.23 |
+| MyBatis                | MyBatis 数据库工具   | 3.5.19 | 
+| MyBatis Plus           | MyBatis 增强工具包   | 3.5.12 | 
+| Hutool                 | Java工具类库         | 5.8.33 | 
+| Lombok                 | 消除冗长的 Java 代码 | 1.18.34 | 
+
+
+## 前端技术
+
+| 框架           | 说明        | 版本     |
+|--------------|-----------|--------|
+| vue          | 框架语言      |3.4.31 |
+| vite         | 构建工具      |5.3.2 |
+| element-plus | 组件库        |2.9.9 |
+| echarts      | 报表库        |5.6.0 |
+
+# 许可证
+
+JinBooks <b>遵循 Apache License, Version 2.0 开源免费</b>
+
