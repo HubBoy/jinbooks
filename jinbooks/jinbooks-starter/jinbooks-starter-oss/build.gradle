@@ -1,0 +1,13 @@
+description = "jinbooks-starter-oss"
+
+dependencies {
+	//local jars
+	implementation fileTree(dir: '../jinbooks-lib/', include: '*/*.jar')
+
+	implementation project(":jinbooks-commons:jinbooks-common")
+	implementation project(":jinbooks-commons:jinbooks-crypto")
+	implementation project(":jinbooks-commons:jinbooks-authn-core")
+	implementation project(":jinbooks-core")
+	implementation project(":jinbooks-persistence")
+
+}

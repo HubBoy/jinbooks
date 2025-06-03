@@ -1,0 +1,281 @@
+/*
+ * Copyright [2025] [JinBooks of copyright http://www.jinbooks.com]
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+ 
+
+package com.jinbooks.persistence.service.impl;
+
+import cn.hutool.core.bean.BeanUtil;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.HttpServletResponse;
+
+import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.jinbooks.constants.ConstsHttpHeader;
+import com.jinbooks.constants.ConstsUser;
+import com.jinbooks.constants.ContentType;
+import com.jinbooks.entity.Message;
+import com.jinbooks.entity.dto.ListIdsDto;
+import com.jinbooks.entity.hr.EmployeeSalary;
+import com.jinbooks.entity.hr.EmployeeSalarySummary;
+import com.jinbooks.entity.hr.Employee;
+import com.jinbooks.entity.hr.dto.SalaryDetailChangeDto;
+import com.jinbooks.entity.hr.dto.SalaryDetailPageDto;
+import com.jinbooks.entity.hr.dto.SalarySummaryChangeDto;
+import com.jinbooks.entity.PeriodStr;
+import com.jinbooks.entity.hr.vo.TaxDeductionExportVo;
+import com.jinbooks.exception.BusinessException;
+import com.jinbooks.persistence.mapper.EmployeeSalaryMapper;
+import com.jinbooks.persistence.mapper.EmployeeMapper;
+import com.jinbooks.persistence.service.EmployeeSalaryService;
+import com.jinbooks.util.PeriodDateUtils;
+import com.jinbooks.util.DateUtils;
+
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.DataFormat;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.io.IOException;
+import java.io.Serializable;
+import java.net.URLEncoder;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
+import java.util.Objects;
+
+/**
+ * @description:
+ * @author: orangeBabu
+ * @time: 2025/2/20 11:59
+ */
+
+@Service
+public class EmployeeSalaryServiceImpl extends ServiceImpl<EmployeeSalaryMapper, EmployeeSalary> implements EmployeeSalaryService {
+	static final Logger logger = LoggerFactory.getLogger(EmployeeSalaryServiceImpl.class);
+    @Autowired
+    private EmployeeSalaryMapper employeeSalaryMapper;
+
+    @Autowired
+    private EmployeeMapper employeeMapper;
+
+    @Override
+    public Message<Page<EmployeeSalary>> pageList(SalaryDetailPageDto dto) {
+
+        Page<EmployeeSalary> employeeSalaryPage = employeeSalaryMapper.pageList(dto.build(), dto);
+
+        return Message.ok(employeeSalaryPage);
+    }
+
+    @Override
+    @Transactional
+    public Message<String> update(SalaryDetailChangeDto dto) {
+        EmployeeSalary employeeSalary = BeanUtil.copyProperties(dto, EmployeeSalary.class);
+        boolean result = super.updateById(employeeSalary);
+
+        return result ? Message.ok("修改成功") : Message.failed("修改失败");
+    }
+
+    @Override
+    @Transactional
+    public Message<String> save(SalaryDetailChangeDto dto) {
+        EmployeeSalary employeeSalary = BeanUtil.copyProperties(dto, EmployeeSalary.class);
+        boolean result = super.save(employeeSalary);
+
+        return result ? Message.ok("新增成功") : Message.failed("新增失败");
+    }
+
+    @Override
+    @Transactional
+    public Message<String> delete(ListIdsDto dto) {
+        List<String> ids = dto.getListIds();
+        boolean result = super.removeBatchByIds(ids);
+        return result ? new Message<>(Message.SUCCESS, "删除成功") : new Message<>(Message.FAIL, "删除失败");
+    }
+
+    @Override
+    public EmployeeSalary getById(Serializable id) {
+        EmployeeSalary employeeSalary = super.getById(id);
+        if (Objects.nonNull(employeeSalary)) {
+            Employee employee = employeeMapper.selectById(employeeSalary.getEmployeeId());
+            if (Objects.nonNull(employee)) {
+                employeeSalary.setBankCardNo(employee.getBankCardNo());
+                employeeSalary.setEmployeeName(employee.getDisplayName());
+                employeeSalary.setEmployeeNumber(employee.getEmployeeNumber());
+                return employeeSalary;
+            }
+            throw new BusinessException(50001, "查询不到该条员工数据");
+        }
+
+        throw new BusinessException(50001, "查询不到该条数据");
+    }
+
+	@Override
+	public EmployeeSalarySummary selectSalarySummary(SalarySummaryChangeDto dto) {
+		return employeeSalaryMapper.selectSalarySummary(dto);
+	}
+
+	@Override
+    public Message<String> exportTaxItems(SalaryDetailPageDto dto, HttpServletResponse response) {
+        List<TaxDeductionExportVo> taxDeductionExportVos = employeeSalaryMapper.exportGetSalaryDetail(dto);
+        if (ObjectUtils.isEmpty(taxDeductionExportVos)) {
+            throw new BusinessException(500001, "暂无数据");
+        }
+        Workbook workbook = null;
+        try {
+            String belongDate = dto.getBelongDate();
+            // 解析 belongDate 为 Date
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-M");
+            Date date;
+
+            date = sdf.parse(belongDate);
+            // 计算 startPeriod 和 endPeriod
+            PeriodStr period = PeriodDateUtils.convertToPeriod(date);
+            String startPeriod = period.getStartPeriodStr();
+            String endPeriod = period.getEndPeriodStr();
+
+            if (taxDeductionExportVos.size() > 5000) {
+                // 比如设置最大内存量为5000行， new SXSSFWookbook(5000)，
+                // 当行数达到 5000 时，把内存持久化写到文件中，以此逐步写入，避免OOM。解决了大数据下导出的问题
+                workbook = new SXSSFWorkbook(5000);
+            } else {
+                workbook = new XSSFWorkbook();
+            }
+            int rowCount = 0;
+            //创建sheet
+            Sheet sheet = workbook.createSheet(dto.getBelongDate() + "_正常工资薪金所得");
+            Row row = sheet.createRow(rowCount++);
+            row.createCell(0).setCellValue("JinBooks Salary Export " + DateUtils.getCurrentDateTimeAsString());
+            sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 30));
+            // 2. 创建数据格式（保留两位小数）
+            CellStyle cellStyle = workbook.createCellStyle();
+            DataFormat dataFormat = workbook.createDataFormat();
+            cellStyle.setDataFormat(dataFormat.getFormat("0.00"));
+            //构建头
+            row = sheet.createRow(rowCount++);
+            int headerColumn = 0;
+            row.createCell(headerColumn++).setCellValue("工号");
+            row.createCell(headerColumn++).setCellValue("姓名");
+            row.createCell(headerColumn++).setCellValue("证件类型");
+            row.createCell(headerColumn++).setCellValue("证件号码");
+            row.createCell(headerColumn++).setCellValue("所得期间起");
+            row.createCell(headerColumn++).setCellValue("所得期间止");
+            row.createCell(headerColumn++).setCellValue("本期收入");
+            row.createCell(headerColumn++).setCellValue("本期免税收入");
+            row.createCell(headerColumn++).setCellValue("基本养老保险费");
+            row.createCell(headerColumn++).setCellValue("基本医疗保险费");
+            row.createCell(headerColumn++).setCellValue("失业保险费");
+            row.createCell(headerColumn++).setCellValue("住房公积金");
+            row.createCell(headerColumn++).setCellValue("累计子女教育");
+            row.createCell(headerColumn++).setCellValue("累计继续教育");
+            row.createCell(headerColumn++).setCellValue("大病医疗");
+            row.createCell(headerColumn++).setCellValue("累计住房贷款利息");
+            row.createCell(headerColumn++).setCellValue("累计住房租金");
+            row.createCell(headerColumn++).setCellValue("累计赡养老人");
+            row.createCell(headerColumn++).setCellValue("累计3岁以下婴幼儿照护");
+            row.createCell(headerColumn++).setCellValue("累计个人养老金");
+            row.createCell(headerColumn++).setCellValue("企业(职业)年金");
+            row.createCell(headerColumn++).setCellValue("商业健康保险");
+            row.createCell(headerColumn++).setCellValue("税延养老保险");
+            row.createCell(headerColumn++).setCellValue("其他");
+            row.createCell(headerColumn++).setCellValue("准予扣除的捐赠额");
+            row.createCell(headerColumn++).setCellValue("税前扣除项目合计");
+            row.createCell(headerColumn++).setCellValue("减免税额");
+            row.createCell(headerColumn++).setCellValue("减除费用标准");
+            row.createCell(headerColumn++).setCellValue("已缴税额");
+            row.createCell(headerColumn++).setCellValue("备注");
+
+            for (TaxDeductionExportVo exportVo: taxDeductionExportVos) {
+            	//导出正式员工 、实习生、退休返聘
+            	if(exportVo.getEmployeeType().equalsIgnoreCase(ConstsUser.EMPLOYEE_TYPE.NORMAL)
+            			||exportVo.getEmployeeType().equalsIgnoreCase(ConstsUser.EMPLOYEE_TYPE.INTERN)
+            			||exportVo.getEmployeeType().equalsIgnoreCase(ConstsUser.EMPLOYEE_TYPE.RETIREMENT)) {
+	                row = sheet.createRow(rowCount++);
+	                int column = 0;
+	                row.createCell(column++).setCellValue(exportVo.getEmployeeNumber());
+	                row.createCell(column++).setCellValue(exportVo.getDisplayName());
+	                row.createCell(column++).setCellValue(exportVo.getIdCardType());
+	                row.createCell(column++).setCellValue(exportVo.getIdCardNo());
+	                row.createCell(column++).setCellValue(startPeriod);
+	                row.createCell(column++).setCellValue(endPeriod);
+	                // 3. 统一格式化所有数值字段
+	                double[] values = {
+	                        exportVo.getIncome().doubleValue(),
+	                        exportVo.getTaxFreeIncome().doubleValue(),
+	                        exportVo.getInsuranceEndowment().doubleValue(),
+	                        exportVo.getInsuranceMedical().doubleValue(),
+	                        exportVo.getInsuranceUnemployment().doubleValue(),
+	                        exportVo.getHousingProvidentFund().doubleValue(),
+	                        exportVo.getEducation().doubleValue(),
+	                        exportVo.getContinuingEducation().doubleValue(),
+	                        exportVo.getMedical().doubleValue(),
+	                        exportVo.getHousingLoan().doubleValue(),
+	                        exportVo.getRent().doubleValue(),
+	                        exportVo.getElderlyCare().doubleValue(),
+	                        exportVo.getInfantsCare().doubleValue(),
+	                        exportVo.getIndividualPension().doubleValue(),
+	                        exportVo.getEnterprisePension().doubleValue(),
+	                        exportVo.getCommercialHealth().doubleValue(),
+	                        exportVo.getDeferredPension().doubleValue(),
+	                        exportVo.getOthers().doubleValue(),
+	                        exportVo.getDonationAllowed().doubleValue(),
+	                        exportVo.getTotalPreTaxDeduction().doubleValue(),
+	                        exportVo.getTaxDeductions().doubleValue(),
+	                        exportVo.getDeductingStandards().doubleValue(),
+	                        exportVo.getPaidTax().doubleValue()
+	                };
+	                // 4. 统一创建单元格并应用格式
+	                for (int j = 0; j < values.length; j++) {
+	                    Cell cell = row.createCell(column++ + j); // 从第6列开始
+	                    cell.setCellValue(values[j]);
+	                    cell.setCellStyle(cellStyle);
+	                }
+	                row.createCell(column++).setCellValue(exportVo.getRemark());
+	            }
+            }
+            String fileName = "salary-" + belongDate;
+            fileName = URLEncoder.encode(fileName, "UTF8");
+            response.setContentType(ContentType.APPLICATION_MS_EXCEL);
+            response.setHeader(ConstsHttpHeader.CONTENT_DISPOSITION, ConstsHttpHeader.ATTACHMENT_FILE.formatted(fileName));
+            ServletOutputStream out = response.getOutputStream();
+            workbook.write(out);
+            out.flush();
+            out.close();
+        } catch (Exception e) {
+            logger.error("error:", e);
+        } finally {
+            if (Objects.nonNull(workbook)) {
+                try {
+                    workbook.close();
+                } catch (IOException e) {
+                    logger.error("error close ", e);
+                }
+            }
+        }
+        return null;
+    }
+}

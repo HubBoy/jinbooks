@@ -1,0 +1,12 @@
+
+description = "jinbooks-starter-ip2location"
+
+
+dependencies {
+	//local jars
+	implementation fileTree(dir: '../jinbooks-lib/', include: '*/*.jar')
+
+	implementation project(":jinbooks-commons:jinbooks-common")
+	implementation project(":jinbooks-core")
+
+}

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jinbooks.persistence.mapper.EmployeeSalaryVoucherRuleMapper">
+    <select id="pageList"
+            parameterType="com.jinbooks.entity.hr.dto.EmployeeSalaryVoucherRulePageDto"
+            resultType="com.jinbooks.entity.hr.EmployeeSalaryVoucherRule">
+        select jesvr.*,jbs.display_name as subjectName,jbs.code as subjectCode
+        from jbx_employee_salary_voucher_rule jesvr
+        join jbx_book_subject jbs on jesvr.subject_id = jbs.id
+        and jbs.deleted = 'n'
+        and jbs.book_id = #{dto.bookId}
+        and (jbs.is_auxiliary &lt;&gt; 1 OR jbs.is_auxiliary IS NULL)
+        where jesvr.deleted = 'n'
+        and jesvr.book_id = #{dto.bookId}
+        <if test="dto.voucherType != null">
+            and jesvr.voucher_type = #{dto.voucherType}
+        </if>
+        order by jesvr.created_date desc
+    </select>
+</mapper>

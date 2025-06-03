@@ -1,0 +1,7 @@
+description = "jinbooks-crypto"
+
+dependencies {
+	//local jars
+	implementation fileTree(dir: '../jinbooks-lib/', include: '*/*.jar')
+	
+}
