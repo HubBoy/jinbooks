@@ -62,32 +62,43 @@
         </el-table-column>
       </el-table>
 
-      <el-dialog v-model="dialogOpen" width="700px" append-to-body :title="dialogTitle" :close-on-click-modal="false"
+      <el-dialog v-model="dialogOpen" width="800px" append-to-body :title="dialogTitle" :close-on-click-modal="false"
                  @close="cancel">
         <el-alert v-if="isBalance" type="success" show-icon :closable="false"
                   center
                   title="报表数据平衡！">
         </el-alert>
         <el-alert v-if="!isBalance" type="warning" show-icon :closable="false"
-                            :title="balanceTitle">
-                  </el-alert>
+                  :title="balanceTitle">
+        </el-alert>
         <div class="balance-check-content" v-if="!isBalance">
           <div class="balance-calculation">
             <div class="balance-item">
-              <p class="balance-amount" v-if="endingBalance !== 0.00">{{formatBalance(endingBalance)}}</p>
+              <p class="balance-amount" v-if="endingBalance !== 0.00">{{ formatBalance(endingBalance) }}</p>
               <p class="balance-amount" v-else>0.00</p>
               <p class="balance-label">期末现金及现金等价物余额(38行)</p>
             </div>
             <div class="operator">−</div>
-            <div class="balance-item">
-              <p class="balance-amount" v-if="startingBalance !== 0.00">{{formatBalance(startingBalance)}}</p>
+            <div class="balance-item" style="width: 40%">
+              <p class="balance-amount" v-if="startingBalance !== 0.00">{{ formatBalance(startingBalance) }}</p>
               <p class="balance-amount" v-else>0.00</p>
               <p class="balance-label">科目初始余额</p>
+              <!-- 分割线 -->
+              <hr class="balance-divider"/>
+              <!-- 明细列表 -->
+              <div
+                  class="balance-detail"
+                  v-for="(item, index) in bookInitBalances"
+                  :key="index"
+              >
+                <span class="balance-detail-left">·{{ item.code }}{{ item.name }}</span>
+                <span class="balance-detail-right">{{ formatBalance(item.balance)}}</span>
+              </div>
             </div>
             <div class="operator">=</div>
 
             <div class="balance-item">
-              <p class="balance-amount" v-if="difference !== 0.00">{{formatBalance(difference)}}</p>
+              <p class="balance-amount" v-if="difference !== 0.00">{{ formatBalance(difference) }}</p>
               <p class="balance-amount" v-else>0.00</p>
               <p class="balance-label">差额</p>
             </div>
@@ -114,12 +125,11 @@ import {ElForm} from "element-plus";
 const {t} = useI18n()
 const {proxy} = getCurrentInstance()!;
 const dataList: any = ref<any>([]);
+const bookInitBalances: any = ref<any>([]);
 const loading: any = ref(false);
 const data = reactive({
   queryParams: {},
-  form: {
-
-  }
+  form: {}
 });
 const {queryParams, form} = toRefs(data);
 const inputRef = ref<any>(null);
@@ -154,26 +164,26 @@ const manualInputRows = [2, 3, 4, 6, 7, 8, 9, 13, 14, 15, 16, 17, 19, 20, 21, 22
 // 按依赖关系排序的计算规则
 const calculationRules = [
   // 一级计算 (直接依赖手动输入的行)
-  { targetIndex: 5, type: 'sum', sourceIndices: [2, 3, 4] },                // 经营活动现金流入小计
-  { targetIndex: 10, type: 'sum', sourceIndices: [6, 7, 8, 9] },            // 经营活动现金流出小计
-  { targetIndex: 18, type: 'sum', sourceIndices: [13, 14, 15, 16, 17] },    // 投资活动现金流入小计
-  { targetIndex: 23, type: 'sum', sourceIndices: [19, 20, 21, 22] },        // 投资活动现金流出小计
-  { targetIndex: 29, type: 'sum', sourceIndices: [26, 27, 28] },            // 筹资活动现金流入小计
-  { targetIndex: 33, type: 'sum', sourceIndices: [30, 31, 32] },            // 筹资活动现金流出小计
+  {targetIndex: 5, type: 'sum', sourceIndices: [2, 3, 4]},                // 经营活动现金流入小计
+  {targetIndex: 10, type: 'sum', sourceIndices: [6, 7, 8, 9]},            // 经营活动现金流出小计
+  {targetIndex: 18, type: 'sum', sourceIndices: [13, 14, 15, 16, 17]},    // 投资活动现金流入小计
+  {targetIndex: 23, type: 'sum', sourceIndices: [19, 20, 21, 22]},        // 投资活动现金流出小计
+  {targetIndex: 29, type: 'sum', sourceIndices: [26, 27, 28]},            // 筹资活动现金流入小计
+  {targetIndex: 33, type: 'sum', sourceIndices: [30, 31, 32]},            // 筹资活动现金流出小计
 
   // 二级计算 (依赖一级计算结果)
-  { targetIndex: 11, type: 'diff', minuend: 5, subtrahend: 10 },           // 经营活动产生的现金流量净额
-  { targetIndex: 24, type: 'diff', minuend: 18, subtrahend: 23 },          // 投资活动产生的现金流量净额
-  { targetIndex: 34, type: 'diff', minuend: 29, subtrahend: 33 },          // 筹资活动产生的现金流量净额
+  {targetIndex: 11, type: 'diff', minuend: 5, subtrahend: 10},           // 经营活动产生的现金流量净额
+  {targetIndex: 24, type: 'diff', minuend: 18, subtrahend: 23},          // 投资活动产生的现金流量净额
+  {targetIndex: 34, type: 'diff', minuend: 29, subtrahend: 33},          // 筹资活动产生的现金流量净额
 
   // 三级计算 (依赖二级计算结果)
-  { targetIndex: 36, type: 'sum', sourceIndices: [11, 24, 34, 35] },       // 现金及现金等价物净增加额
+  {targetIndex: 36, type: 'sum', sourceIndices: [11, 24, 34, 35]},       // 现金及现金等价物净增加额
 
   // 四级计算
-  { targetIndex: 38, type: 'sum', sourceIndices: [36, 37] },               // 期末现金及现金等价物余额 = 期初余额 + 净增加额
+  {targetIndex: 38, type: 'sum', sourceIndices: [36, 37]},               // 期末现金及现金等价物余额 = 期初余额 + 净增加额
 
   // 现金及现金等价物净增加额计算
-  { targetIndex: 67, type: 'complexDiff', sourceIndices: [63, 64, 65, 66] }, // 现金及现金等价物净增加额 = 现金的期末余额 - 减：现金的期初余额 + 加：现金等价物的期末余额 - 减：现金等价物的期初余额
+  {targetIndex: 67, type: 'complexDiff', sourceIndices: [63, 64, 65, 66]}, // 现金及现金等价物净增加额 = 现金的期末余额 - 减：现金的期初余额 + 加：现金等价物的期末余额 - 减：现金等价物的期初余额
 
   // 新增：第二种方法计算经营活动现金流量净额，除了"其他"项
   {
@@ -338,7 +348,7 @@ watch(
         }
       }
     },
-    { deep: true }
+    {deep: true}
 );
 
 // 行类名方法
@@ -352,11 +362,13 @@ const tableRowClassName = ({row, rowIndex}: { row: TableItem; rowIndex: number }
 function getList() {
   loading.value = true;
   fetchPage(queryParams.value).then((response: any) => {
-    dataList.value = response.data.map((item: any) => ({
+    dataList.value = response.data.configCashFlowBalances.map((item: any) => ({
       ...item,
       editing: false,
       inputBalance: item.balance
     }));
+
+    bookInitBalances.value = response.data.bookInitBalances;
 
     loading.value = false;
     // 在数据加载完成后执行一次计算
@@ -592,7 +604,7 @@ getList();
 
 .balance-calculation {
   display: flex;
-  justify-content: center;
+  justify-content: space-around;
   align-items: flex-start;
   margin: 30px 0;
   gap: 20px;
@@ -622,5 +634,28 @@ getList();
   font-weight: bold;
   color: #909399;
   margin-top: 4px; /* 调整操作符垂直对齐位置 */
+}
+
+.balance-divider {
+  margin: 10px auto;
+  border: none;
+  border-top: 1px solid #eee;
+  width: 80%;
+}
+
+.balance-detail {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #666;
+  padding: 2px 20px;
+}
+
+.balance-detail-left {
+  text-align: left;
+}
+
+.balance-detail-right {
+  text-align: right;
 }
 </style>

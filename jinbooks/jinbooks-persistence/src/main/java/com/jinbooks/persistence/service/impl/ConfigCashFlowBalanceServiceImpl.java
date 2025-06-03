@@ -1,12 +1,12 @@
 /*
  * Copyright [2025] [JinBooks of copyright http://www.jinbooks.com]
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  */
- 
+
 
 package com.jinbooks.persistence.service.impl;
 
@@ -27,6 +27,7 @@ import com.jinbooks.entity.book.dto.BookChangeDto;
 import com.jinbooks.entity.config.ConfigCashFlowBalance;
 import com.jinbooks.entity.config.dto.ConfigCashFlowChangeDto;
 import com.jinbooks.entity.config.dto.ConfigCashFlowPageDto;
+import com.jinbooks.entity.vo.CashFlowSubjectBalanceVo;
 import com.jinbooks.exception.BusinessException;
 import com.jinbooks.persistence.mapper.BookInitBalanceMapper;
 import com.jinbooks.persistence.mapper.ConfigCashFlowBalanceMapper;
@@ -56,12 +57,13 @@ public class ConfigCashFlowBalanceServiceImpl extends ServiceImpl<ConfigCashFlow
     private final BookInitBalanceMapper bookInitBalanceMapper;
 
     @Override
-    public Message<List<ConfigCashFlowBalance>> pageList(ConfigCashFlowPageDto dto) {
+    public Message<CashFlowSubjectBalanceVo> pageList(ConfigCashFlowPageDto dto) {
         LambdaQueryWrapper<ConfigCashFlowBalance> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(ConfigCashFlowBalance::getBookId, dto.getBookId())
                 .orderByAsc(ConfigCashFlowBalance::getSortIndex);
         List<ConfigCashFlowBalance> list = super.list(wrapper);
 
+        //获取科目初始余额
         LambdaQueryWrapper<BookInitBalance> wrapperBookInit = new LambdaQueryWrapper<>();
         wrapperBookInit.eq(BookInitBalance::getBookId, dto.getBookId());
         wrapperBookInit.eq(BookInitBalance::getLevel, 1);
@@ -115,9 +117,8 @@ public class ConfigCashFlowBalanceServiceImpl extends ServiceImpl<ConfigCashFlow
             }
         }
 
-//        super.updateBatchById(list);
-
-        return Message.ok(list);
+        CashFlowSubjectBalanceVo cashFlowSubjectBalanceVo = new CashFlowSubjectBalanceVo(list, bookInitBalances);
+        return Message.ok(cashFlowSubjectBalanceVo);
 
     }
 
