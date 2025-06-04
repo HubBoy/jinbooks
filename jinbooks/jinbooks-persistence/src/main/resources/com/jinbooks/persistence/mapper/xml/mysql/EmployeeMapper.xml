@@ -41,6 +41,7 @@
             AND jest.book_id = #{Dto.bookId}
         WHERE jest.employee_id IS NULL
           AND je.deleted = 'n'
+          AND je.employee_status = 'RESIDENT'
           AND je.book_id = #{Dto.bookId}
     </select>
 </mapper>

@@ -587,6 +587,7 @@ public class BookSubjectServiceImpl extends ServiceImpl<BookSubjectMapper, BookS
         //1级
         for (BookSubject subject : subjectList) {
             if (subject.getCode().length() == 4) {
+            	subject.setIdPath("/"+subject.getId());
                 subject.setDisplayName(subject.getName());
                 subject.setPinyinDisplayCode(subject.getPinyinCode());
             }
@@ -598,6 +599,7 @@ public class BookSubjectServiceImpl extends ServiceImpl<BookSubjectMapper, BookS
                 BookSubject parentSubject = subjectMap.get(parentCode);
                 if (parentSubject != null) {
                     subject.setParentId(parentSubject.getId());
+                    subject.setIdPath(parentSubject.getIdPath()+"/"+subject.getId());
                     subject.setDisplayName(parentSubject.getDisplayName() + "_" + subject.getName());
                     subject.setPinyinDisplayCode(parentSubject.getPinyinDisplayCode() + "_" + subject.getPinyinCode());
                 } else {
@@ -613,6 +615,7 @@ public class BookSubjectServiceImpl extends ServiceImpl<BookSubjectMapper, BookS
                 BookSubject parentSubject = subjectMap.get(parentCode);
                 if (parentSubject != null) {
                     subject.setParentId(parentSubject.getId());
+                    subject.setIdPath(parentSubject.getIdPath()+"/"+subject.getId());
                     subject.setDisplayName(parentSubject.getDisplayName() + "_" + subject.getName());
                     subject.setPinyinDisplayCode(parentSubject.getPinyinDisplayCode() + "_" + subject.getPinyinCode());
                 } else {
@@ -628,6 +631,7 @@ public class BookSubjectServiceImpl extends ServiceImpl<BookSubjectMapper, BookS
                 BookSubject parentSubject = subjectMap.get(parentCode);
                 if (parentSubject != null) {
                     subject.setParentId(parentSubject.getId());
+                    subject.setIdPath(parentSubject.getIdPath()+"/"+subject.getId());
                     subject.setDisplayName(parentSubject.getDisplayName() + "_" + subject.getName());
                     subject.setPinyinDisplayCode(parentSubject.getPinyinDisplayCode() + "_" + subject.getPinyinCode());
                 } else {
