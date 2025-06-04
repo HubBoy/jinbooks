@@ -193,7 +193,7 @@ public class FundDashboardServiceImpl implements FundDashboardService {
      */
     @Override
     public List<OtherSubjectsVo> statisticsOtherSubjects(StatementParamsDto params) {
-        LambdaQueryWrapper<StatementSubjectBalance> lqw = buildQueryWrapper(params);
+        LambdaQueryWrapper<StatementSubjectBalance> lqw = buildYearQueryWrapper(params);
         lqw.orderByAsc(StatementSubjectBalance::getYearPeriod);
         if (params.getSubjectCodes() != null) {
             lqw.likeRight(!params.getSubjectCodes().isEmpty(),
@@ -881,6 +881,16 @@ public class FundDashboardServiceImpl implements FundDashboardService {
         lqw.eq(StatementSubjectBalance::getPeriodType, StatementPeriodTypeEnum.MONTH.getValue());
         lqw.ge(StatementSubjectBalance::getYearPeriod, params.getDateRange()[0]);
         lqw.le(StatementSubjectBalance::getYearPeriod, params.getDateRange()[1]);
+        return lqw;
+    }
+    
+    private LambdaQueryWrapper<StatementSubjectBalance> buildYearQueryWrapper(StatementParamsDto params) {
+        LambdaQueryWrapper<StatementSubjectBalance> lqw = Wrappers.lambdaQuery();
+        lqw.eq(StatementSubjectBalance::getBookId, params.getBookId());
+        lqw.eq(StatementSubjectBalance::getPeriodType, StatementPeriodTypeEnum.MONTH.getValue());
+        String currentTerm = configSysService.getCurrentTerm(params.getBookId());
+        lqw.ge(StatementSubjectBalance::getYearPeriod, currentTerm.split("-")[0]+"-01");
+        lqw.le(StatementSubjectBalance::getYearPeriod, currentTerm);
         return lqw;
     }
 }

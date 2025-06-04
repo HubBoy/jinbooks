@@ -186,7 +186,7 @@ const getList = () => {
               show: true,
               position: 'center',
               formatter: [
-                '{title|总额合计}',
+                '{title|总额合计(万元)}',
                 '{value|' + totalAmount.toLocaleString() + '}',
               ].join('\n'),
               rich: {
