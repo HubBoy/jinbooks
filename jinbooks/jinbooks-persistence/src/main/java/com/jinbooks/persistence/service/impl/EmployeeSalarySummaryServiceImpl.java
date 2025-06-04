@@ -127,6 +127,7 @@ public class EmployeeSalarySummaryServiceImpl extends ServiceImpl<EmployeeSalary
             wrapper.ge(EmployeeSalarySummary::getBelongDate, startDate)
                     .le(EmployeeSalarySummary::getBelongDate, endDate);
         }
+        wrapper.orderByDesc(EmployeeSalarySummary::getBelongDate);
         Page<EmployeeSalarySummary> page = super.page(dto.build(), wrapper);
         return Message.ok(page);
     }
