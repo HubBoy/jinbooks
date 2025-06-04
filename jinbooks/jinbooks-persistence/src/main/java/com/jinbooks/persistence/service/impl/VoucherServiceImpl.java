@@ -927,7 +927,7 @@ public class VoucherServiceImpl extends ServiceImpl<VoucherMapper, Voucher> impl
                     balance = BigDecimal.ZERO;
                 }
                 // 借方，更新科目余额和科目余额表
-                if (item.getDebitAmount() != null && item.getDebitAmount().compareTo(BigDecimal.ZERO) > 0) {
+                if (item.getDebitAmount() != null && item.getDebitAmount().compareTo(BigDecimal.ZERO) != 0) {
                     if (isCancel) {
                         subjectBalanceService.update(setSubject, item.getDebitAmount(),
                                 StatementSymbolEnum.MINUS, SubjectDirectionEnum.DEBIT, auxiliaries,
@@ -941,7 +941,7 @@ public class VoucherServiceImpl extends ServiceImpl<VoucherMapper, Voucher> impl
                     }
                 }
                 // 贷方，更新科目余额和科目余额表
-                else if (item.getCreditAmount() != null && item.getCreditAmount().compareTo(BigDecimal.ZERO) > 0) {
+                else if (item.getCreditAmount() != null && item.getCreditAmount().compareTo(BigDecimal.ZERO) != 0) {
                     if (isCancel) {
                         subjectBalanceService.update(setSubject, item.getCreditAmount(),
                                 StatementSymbolEnum.PLUS, SubjectDirectionEnum.CREDIT, auxiliaries,
