@@ -1031,11 +1031,11 @@ public class VoucherServiceImpl extends ServiceImpl<VoucherMapper, Voucher> impl
     }
 
     /**
-     * @Description: 根据科目现金流量默认关系添加凭证项和现金流量关系
-     * @Param: [dto]
-     * @return: void
-     * @Author: xZen
-     * @Date: 2025/4/23 9:43
+     * {@code @Description:} 根据科目现金流量默认关系添加凭证项和现金流量关系
+     * {@code @Param:} [dto]
+     * {@code @return:} void
+     * {@code @Author:} xZen
+     * {@code @Date:} 2025/4/23 9:43
      */
     private void setVoucherItemCashFlow(VoucherChangeDto dto) {
         if (dto == null || StringUtils.isEmpty(dto.getId())) {

@@ -1,12 +1,12 @@
 /*
  * Copyright [2025] [JinBooks of copyright http://www.jinbooks.com]
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  */
- 
+
 
 package com.jinbooks.entity.dto;
 
@@ -26,17 +26,18 @@ import lombok.EqualsAndHashCode;
 import java.io.Serial;
 
 /**
- * @description:
- * @author: orangeBabu
- * @time: 2024/11/27 17:37
+ * {@code @description:}
+ * {@code @author:} orangeBabu
+ * {@code @time:} 2024/11/27 17:37
  */
 
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class SocialsProviderPageDto extends PageQuery {/**
-	 * 
-	 */
-	@Serial
-	private static final long serialVersionUID = 6001449362547319688L;
-	
+public class SocialsProviderPageDto extends PageQuery {
+    /**
+     *
+     */
+    @Serial
+    private static final long serialVersionUID = 6001449362547319688L;
+
 }

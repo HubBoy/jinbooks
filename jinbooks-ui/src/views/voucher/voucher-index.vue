@@ -259,7 +259,6 @@ import {getVoucherStatusDesc} from "@/utils/enums/VoucherStatusEnum"
 import {parseTime} from "@/utils/Jinbooks";
 import {formatAmount} from "@/utils";
 import {reactive} from "vue";
-import {ElSelect} from "element-plus";
 import bookStore from "@/store/modules/bookStore";
 import {downloadData} from "@/utils/index"
 
@@ -411,7 +410,7 @@ function handlePreview(row) {
 /** 修改按钮操作 */
 function handleCancel(row) {
   const _id = [row.id] || ids.value.join(",");
-  voucherApis.cancelVoucherByIds(_id).then(response => {
+  voucherApis.cancelVoucherByIds(_id).then(res => {
     proxy.$modal.msgSuccess("已取消");
     getList()
   });
