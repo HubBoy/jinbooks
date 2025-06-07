@@ -21,6 +21,9 @@ package com.jinbooks.entity.dto;
 import com.jinbooks.entity.PageQuery;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+
+import java.io.Serial;
 
 /**
  * @description:
@@ -28,10 +31,12 @@ import lombok.Data;
  * @time: 2024/11/27 17:37
  */
 
+@EqualsAndHashCode(callSuper = true)
 @Data
 public class SocialsProviderPageDto extends PageQuery {/**
 	 * 
 	 */
+	@Serial
 	private static final long serialVersionUID = 6001449362547319688L;
 	
 }

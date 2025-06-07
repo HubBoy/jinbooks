@@ -49,7 +49,7 @@ public interface VoucherService extends IService<Voucher> {
 
     Message<Integer> getAbleWordNum(String bookId, String head, Integer year, Integer month);
 
-    Message<String> submit(VoucherChangeDto dto);
+    Message<String> submit(VoucherChangeDto dto, boolean update);
 
     Message<Integer> cancelByIds(List<String> ids, String bookId);
 
@@ -78,4 +78,6 @@ public interface VoucherService extends IService<Voucher> {
     void export(VoucherPageDto dto, HttpServletResponse response) throws IOException;
     
     boolean deleteByBookIds(List<String> bookIds);
+
+    Message<String> submitBatch(List<String> ids, String bookId);
 }

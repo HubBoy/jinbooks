@@ -5,7 +5,7 @@
 </template>
 
 <script setup lang="ts">
-import {computed, defineComponent, defineProps} from "vue"
+import {computed, defineComponent} from "vue"
 import {isExternal} from '@/utils/Validate'
 
 const props = defineProps({

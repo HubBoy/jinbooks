@@ -58,7 +58,12 @@
             @click="handleAdd"
         >{{ t('org.button.add') }}
         </el-button>
-
+        <el-button
+            type="success"
+            :disabled="ids.length === 0"
+            @click="handleSubmit"
+        >提交
+        </el-button>
         <el-button
             type="success"
             :disabled="ids.length === 0"
@@ -95,13 +100,14 @@
         <el-table-column type="selection" width="55" align="center"/>
         <el-table-column label="凭证字" align="left" header-align="center" prop="word" width="150" fixed="left"/>
         <!--        <el-table-column label="公司名称" align="center" prop="companyName" width="150"/>-->
-        <el-table-column label="备注" align="left" header-align="center" prop="remark" width="280" :show-overflow-tooltip="true"/>
-        <el-table-column label="借方总额" align="right"  header-align="center" prop="debitAmount" width="120">
+        <el-table-column label="备注" align="left" header-align="center" prop="remark" width="280"
+                         :show-overflow-tooltip="true"/>
+        <el-table-column label="借方总额" align="right" header-align="center" prop="debitAmount" width="120">
           <template #default="scope">
             {{ formatAmount(scope.row.debitAmount) }}
           </template>
         </el-table-column>
-        <el-table-column label="贷方总额" align="right"  header-align="center" prop="creditAmount" width="120">
+        <el-table-column label="贷方总额" align="right" header-align="center" prop="creditAmount" width="120">
           <template #default="scope">
             {{ formatAmount(scope.row.creditAmount) }}
           </template>
@@ -114,7 +120,7 @@
         <el-table-column label="附单据" align="center" prop="receiptNum"/>
         <el-table-column label="结转" align="center" prop="carryForward">
           <template #default="scope">
-                <span v-if="scope.row.carryForward === 'y'">是</span>
+            <span v-if="scope.row.carryForward === 'y'">是</span>
             <span v-if="scope.row.carryForward === 'n'">否</span>
           </template>
         </el-table-column>
@@ -417,6 +423,22 @@ function submitForm(res) {
     open.value = false
     getList();
   }
+}
+
+function handleSubmit(row) {
+  const _ids = row.id || ids.value.join(",");
+  const idList = _ids.split(",")
+  const submitIds = booksVoucherList.value.filter(item => {
+    return idList.indexOf(item.id) > -1 && 'draft' === item.status
+  }).map(item => item.id)
+  if (!submitIds.length) {
+    proxy.$modal.msgError("没有可以提交的凭证项。");
+    return
+  }
+  voucherApis.submitBatch(submitIds).then(res => {
+    getList();
+    proxy.$modal.msgSuccess("操作成功")
+  })
 }
 
 function handleAudit(row) {

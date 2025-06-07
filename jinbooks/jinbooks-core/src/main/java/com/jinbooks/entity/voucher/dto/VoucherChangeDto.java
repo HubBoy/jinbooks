@@ -23,7 +23,10 @@ import com.jinbooks.validate.AddGroup;
 import com.jinbooks.validate.EditGroup;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -36,6 +39,9 @@ import java.util.List;
  * {@code @date} 2025-01-14
  */
 
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Data
 public class VoucherChangeDto {
     /**

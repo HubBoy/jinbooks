@@ -132,6 +132,17 @@ export function updateVoucherSuccessive(data: any): any {
 }
 
 /**
+ * 批量提交凭证
+ * @param ids 凭证ID串
+ */
+export function submitBatch(ids: any): any {
+    return request({
+        url: '/voucher/submit/' + ids,
+        method: 'post'
+    })
+}
+
+/**
  * 审核凭证
  * @param ids
  */

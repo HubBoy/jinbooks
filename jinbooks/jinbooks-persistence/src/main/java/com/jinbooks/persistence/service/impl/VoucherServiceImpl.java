@@ -1,12 +1,12 @@
 /*
  * Copyright [2025] [JinBooks of copyright http://www.jinbooks.com]
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  */
- 
+
 
 package com.jinbooks.persistence.service.impl;
 
@@ -309,24 +309,36 @@ public class VoucherServiceImpl extends ServiceImpl<VoucherMapper, Voucher> impl
     /**
      * 保存&提交
      *
-     * @param dto 数据对象
+     * @param dto    数据对象
+     * @param update 是否更新数据
      * @return 结果
      */
     @Override
     @Transactional
-    public Message<String> submit(VoucherChangeDto dto) {
-        // 先执行暂存操作
-        dto.setStatus(VoucherStatusEnum.DRAFT.getValue());
-        Message<String> saveRes;
-        if (StringUtils.isEmpty(dto.getId())) {
-            saveRes = save(dto);
-        } else {
-            saveRes = update(dto);
+    public Message<String> submit(VoucherChangeDto dto, boolean update) {
+        if (StringUtils.isNotBlank(dto.getId())) {
+            Voucher voucher = baseMapper.selectById(dto.getId());
+            if (voucher == null) {
+                return Message.failed("凭证不存在");
+            }
+            if (!VoucherStatusEnum.DRAFT.getValue().equals(voucher.getStatus())) {
+                return Message.failed("凭证已提交，不允许修改");
+            }
         }
-        if (saveRes.getCode() != Message.SUCCESS) {
-            return saveRes;
+        if (update) {
+            // 先执行暂存操作
+            dto.setStatus(VoucherStatusEnum.DRAFT.getValue());
+            Message<String> saveRes;
+            if (StringUtils.isEmpty(dto.getId())) {
+                saveRes = save(dto);
+            } else {
+                saveRes = update(dto);
+            }
+            if (saveRes.getCode() != Message.SUCCESS) {
+                return saveRes;
+            }
+            dto.setId(saveRes.getData());
         }
-        dto.setId(saveRes.getData());
 
         // 只有当前期的凭证允许提交，因为会影响到余额数据
         String currentTerm = configSysService.getCurrentTerm(dto.getBookId());
@@ -354,6 +366,52 @@ public class VoucherServiceImpl extends ServiceImpl<VoucherMapper, Voucher> impl
         }
 
         return updateResult;
+    }
+
+    /**
+     * 批量提交
+     *
+     * @param ids    ids
+     * @param bookId 账套id
+     * @return 批量提交结果
+     */
+    @Override
+    @Transactional
+    public Message<String> submitBatch(List<String> ids, String bookId) {
+        if (ids.isEmpty()) {
+            return Message.failed("请选择要提交的凭证");
+        }
+        int count = 0;
+        // 遍历处理，保证每一个凭证顺序提交
+        for (String id : ids) {
+            Message<VoucherVo> infoRes = queryById(id);
+            if (infoRes.getCode() != Message.SUCCESS) {
+                return new Message<>(infoRes.getCode(), infoRes.getMessage());
+            }
+            VoucherVo voucherVo = infoRes.getData();
+            VoucherChangeDto dto = VoucherChangeDto.builder().build();
+            BeanUtils.copyProperties(voucherVo, dto);
+            List<VoucherItemVo> items = voucherVo.getItems();
+            if (items.isEmpty()) {
+                continue;
+            }
+
+            // 转换凭证项
+            List<VoucherItemChangeDto> voucherItemChangeDtos = items.stream().map(item -> {
+                VoucherItemChangeDto itemChangeDto = VoucherItemChangeDto.builder().build();
+                BeanUtils.copyProperties(item, itemChangeDto);
+                return itemChangeDto;
+            }).toList();
+            dto.setItems(voucherItemChangeDtos);
+
+            Message<String> submit = submit(dto, false);
+            if (submit.getCode() != Message.SUCCESS) {
+                return new Message<>(submit.getCode(), submit.getMessage() + " 成功提交" + count + "条。");
+            }
+            count++;
+        }
+
+        return new Message<>(Message.SUCCESS, "成功提交" + count + "条凭证, 忽略" + (ids.size() - count) + "条");
     }
 
     /**
@@ -489,9 +547,9 @@ public class VoucherServiceImpl extends ServiceImpl<VoucherMapper, Voucher> impl
         // 插入新数据
         if (!insertItems.isEmpty()) {
             // 只有审核完成，才更新余额
-        	if (VoucherStatusEnum.COMPLETED.getValue().equals(dto.getStatus())) {
-            //if (VoucherStatusEnum.COMPLETED.getValue().equals(dto.getStatus())
-            //        && YesNoEnum.n.name().equals(booksVoucher.getCarryForward())) {
+            if (VoucherStatusEnum.COMPLETED.getValue().equals(dto.getStatus())) {
+                //if (VoucherStatusEnum.COMPLETED.getValue().equals(dto.getStatus())
+                //        && YesNoEnum.n.name().equals(booksVoucher.getCarryForward())) {
                 updateSubjectBalance(insertItems, insertAuxiliary, false);
             }
             boolean saveItems = voucherItemMapper.insertBatch(insertItems);
@@ -1025,17 +1083,17 @@ public class VoucherServiceImpl extends ServiceImpl<VoucherMapper, Voucher> impl
     /**
      * 删除凭证及相关条目
      */
-	@Override
-	public boolean deleteByBookIds(List<String> bookIds) {
-		//删除凭证
-		LambdaQueryWrapper<Voucher> lqw = Wrappers.lambdaQuery();
-		lqw.in(Voucher::getBookId, bookIds);
-		baseMapper.delete(lqw);
-		//删除凭证条目
-		LambdaQueryWrapper<VoucherItem> lqwItem = Wrappers.lambdaQuery();
-		lqwItem.in(VoucherItem::getBookId, bookIds);
-		voucherItemMapper.delete(lqwItem);
-		return false;
-	}
+    @Override
+    public boolean deleteByBookIds(List<String> bookIds) {
+        //删除凭证
+        LambdaQueryWrapper<Voucher> lqw = Wrappers.lambdaQuery();
+        lqw.in(Voucher::getBookId, bookIds);
+        baseMapper.delete(lqw);
+        //删除凭证条目
+        LambdaQueryWrapper<VoucherItem> lqwItem = Wrappers.lambdaQuery();
+        lqwItem.in(VoucherItem::getBookId, bookIds);
+        voucherItemMapper.delete(lqwItem);
+        return false;
+    }
 
 }

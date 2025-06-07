@@ -16,7 +16,7 @@
 
 <script setup lang="ts">
 import {parseTime} from "@/utils/Jinbooks"
-import {ref, defineProps} from "vue";
+import {ref} from "vue";
 
 const version = ref(__APP_VERSION__)
 const time = ref(parseTime(new Date(), "{y}"))
