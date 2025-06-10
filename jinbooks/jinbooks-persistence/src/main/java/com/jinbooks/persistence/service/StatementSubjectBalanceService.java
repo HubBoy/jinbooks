@@ -63,5 +63,7 @@ public interface StatementSubjectBalanceService {
     StatementSubjectBalance create(BookSubject subject, String currentTerm);
     
     boolean checkout(Settlement dto) ;
+    
+    List<StatementSubjectBalance> selectSubjectBalance(String bookId, List<String> subjectCodes);
 
 }

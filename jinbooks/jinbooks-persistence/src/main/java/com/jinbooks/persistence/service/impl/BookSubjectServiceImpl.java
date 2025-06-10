@@ -38,6 +38,7 @@ import com.jinbooks.entity.book.dto.SubjectChangeDto;
 import com.jinbooks.entity.book.dto.SubjectPageDto;
 import com.jinbooks.entity.dto.ListIdsDto;
 import com.jinbooks.entity.standard.StandardSubject;
+import com.jinbooks.entity.statement.StatementSubjectBalance;
 import com.jinbooks.enums.BookBusinessExceptionEnum;
 import com.jinbooks.exception.BusinessException;
 import com.jinbooks.persistence.mapper.BookSubjectMapper;
@@ -46,6 +47,7 @@ import com.jinbooks.persistence.service.BookSubjectService;
 import com.jinbooks.persistence.service.StatementSubjectBalanceService;
 import com.jinbooks.util.StrUtils;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.dromara.hutool.core.tree.MapTree;
@@ -55,6 +57,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -494,38 +497,6 @@ public class BookSubjectServiceImpl extends ServiceImpl<BookSubjectMapper, BookS
         }
     }
 
-    private void insertAuxiliaryData(boolean isAuxiliary, String currentId, BookSubject subject) {
-        if (isAuxiliary) {
-            BookSubject one = super.getOne(Wrappers.<BookSubject>lambdaQuery()
-                    .eq(BookSubject::getBelongSubjectId, currentId));
-            if (Objects.isNull(one)) {
-                BookSubject bookSubject = new BookSubject();
-                bookSubject.setBookId(subject.getBookId());
-                bookSubject.setCode(subject.getCode());
-                bookSubject.setName(subject.getName());
-                bookSubject.setAuxiliary(subject.getAuxiliary());
-                //忽略字段
-//                BookSubject bookSubject = BeanUtil.copyProperties(subject, BookSubject.class, "id", "createdBy", "createdDate", "modifiedBy", "modifiedDate", "deleted");
-                setAuxiliarySubject(bookSubject);
-                bookSubject.setBelongSubjectId(currentId);
-                super.save(bookSubject);
-            } else {
-                BookSubject bookSubject = new BookSubject();
-                bookSubject.setCode(subject.getCode());
-                bookSubject.setName(subject.getName());
-                bookSubject.setAuxiliary(subject.getAuxiliary());
-                setAuxiliarySubject(bookSubject);
-               /* BookSubject bookSubject = new BookSubject();
-                bookSubject.setAuxiliary(subject.getAuxiliary());
-                bookSubject.setIdPath(subject.getIdPath());
-                bookSubject.setParentId(subject.getParentId());
-                bookSubject.setLevel(subject.getLevel());
-                ;*/
-                super.update(bookSubject, Wrappers.<BookSubject>lambdaUpdate().eq(BookSubject::getId, one.getId()));
-            }
-        }
-    }
-
     @Override
     public List<MapTree<String>> tree(String bookId) {
         List<BaseSubject> subjects = new ArrayList<>();
@@ -536,6 +507,12 @@ public class BookSubjectServiceImpl extends ServiceImpl<BookSubjectMapper, BookS
                     .eq(BookSubject::getStatus, OnOffEnum.ON.getCode())
             );
             subjects = new ArrayList<>(setSubjects);
+        }
+        
+        List<StatementSubjectBalance> listSubjectBalance=subjectBalanceService.selectSubjectBalance(bookId, null);
+        HashMap<String,StatementSubjectBalance> subjectBalanceMap = new HashMap<>();
+        for(StatementSubjectBalance sb : listSubjectBalance) {
+        	subjectBalanceMap.put(sb.getSubjectCode(), sb);
         }
 
         List<TreeNode<String>> treeNode = new ArrayList<>();
@@ -553,7 +530,10 @@ public class BookSubjectServiceImpl extends ServiceImpl<BookSubjectMapper, BookS
             extraMap.put("direction", temp.getDirection());
             extraMap.put("code", temp.getCode());
             extraMap.put("auxiliary", temp.getAuxiliary());
-            extraMap.put("balance", temp.getBalance());
+            subjectBalanceMap.get(temp.getCode());
+            StatementSubjectBalance sb = subjectBalanceMap.get(temp.getCode());
+            extraMap.put("balance", (sb != null ) ? sb.getBalance():BigDecimal.ZERO);
+            //extraMap.put("balance", temp.getBalance());
             extraMap.put("pinyinCode", temp.getPinyinCode());
             extraMap.put("pinyinDisplayCode", temp.getPinyinDisplayCode());
             extraMap.put("displayName", temp.getDisplayName());
@@ -658,6 +638,14 @@ public class BookSubjectServiceImpl extends ServiceImpl<BookSubjectMapper, BookS
         bookLqw.eq(BookSubject::getBookId, bookId);
         bookLqw.eq(BookSubject::getDeleted, "n");
         BookSubject bookSubject = bookSubjectMapper.selectOne(bookLqw);
+        List<String>subjectCodes = new ArrayList<>();
+        subjectCodes.add(subjectCode);
+        List<StatementSubjectBalance> listSubjectBalance = subjectBalanceService.selectSubjectBalance(bookId, subjectCodes);
+        if(CollectionUtils.isNotEmpty(listSubjectBalance) && listSubjectBalance.size()>0) {
+        	bookSubject.setBalance(listSubjectBalance.get(0).getBalance());
+        }else {
+        	bookSubject.setBalance(BigDecimal.ZERO);
+        }
         return bookSubject;
     }
 
@@ -674,7 +662,25 @@ public class BookSubjectServiceImpl extends ServiceImpl<BookSubjectMapper, BookS
         bookLqw.likeRight(BookSubject::getCode, subjectCode);
         bookLqw.eq(BookSubject::getBookId, bookId);
         bookLqw.eq(BookSubject::getDeleted, "n");
-        return bookSubjectMapper.selectList(bookLqw);
+        List<BookSubject> listSubject = bookSubjectMapper.selectList(bookLqw);
+        
+        List<String>subjectCodes = new ArrayList<>();
+        subjectCodes.add(subjectCode);
+        List<StatementSubjectBalance> listSubjectBalance=subjectBalanceService.selectSubjectBalance(bookId, subjectCodes);
+        HashMap<String,StatementSubjectBalance> subjectBalanceMap = new HashMap<>();
+        for(StatementSubjectBalance sb : listSubjectBalance) {
+        	subjectBalanceMap.put(sb.getSubjectCode(), sb);
+        }
+        
+        for(BookSubject s : listSubject) {
+        	StatementSubjectBalance sb = subjectBalanceMap.get(s.getCode());
+        	if(sb != null) {
+            	s.setBalance(sb.getBalance());
+            }else {
+            	s.setBalance(BigDecimal.ZERO);
+            }
+        }
+        return listSubject;
     }
 
 	@Override

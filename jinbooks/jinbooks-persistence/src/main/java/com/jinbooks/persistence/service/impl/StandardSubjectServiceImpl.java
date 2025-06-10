@@ -106,7 +106,7 @@ public class StandardSubjectServiceImpl extends ServiceImpl<StandardSubjectMappe
             extraMap.put("direction", temp.getDirection());
             extraMap.put("code", temp.getCode());
             extraMap.put("auxiliary", temp.getAuxiliary());
-            extraMap.put("balance", temp.getBalance());
+            //extraMap.put("balance", temp.getBalance());
             extraMap.put("pinyinCode", temp.getPinyinCode());
             extraMap.put("pinyinDisplayCode", temp.getPinyinDisplayCode());
             extraMap.put("displayName", temp.getDisplayName());

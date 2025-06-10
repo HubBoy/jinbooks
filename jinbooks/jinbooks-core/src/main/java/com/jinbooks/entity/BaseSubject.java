@@ -85,8 +85,6 @@ public class BaseSubject implements Serializable {
 
     Integer systemDefault;
 
-    BigDecimal balance;
-
     String unit;
     /**
      * 辅助核算
@@ -119,6 +117,9 @@ public class BaseSubject implements Serializable {
 
     @TableField(exist = false)
     String parentName;
+    
+    @TableField(exist = false)
+    BigDecimal balance;
 
     /**
      * 创建者

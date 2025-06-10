@@ -977,25 +977,17 @@ public class VoucherServiceImpl extends ServiceImpl<VoucherMapper, Voucher> impl
                         .filter(auxiliary -> auxiliary.getVoucherItemId().equals(item.getId()))
                         .toList();
                 BookSubject setSubject = subjectMap.get(item.getSubjectId());
-                // 寻找上级节点，同步更新余额
-                List<String> subjectParentIds = Arrays.asList(setSubject.getIdPath().split("/"));
-                List<BookSubject> parentSubjects = bookSubjectService.listByIds(subjectParentIds);
-                BigDecimal balance = setSubject.getBalance();
-                if (balance == null) {
-                    balance = BigDecimal.ZERO;
-                }
+
                 // 借方，更新科目余额和科目余额表
                 if (item.getDebitAmount() != null && item.getDebitAmount().compareTo(BigDecimal.ZERO) != 0) {
                     if (isCancel) {
                         subjectBalanceService.update(setSubject, item.getDebitAmount(),
                                 StatementSymbolEnum.MINUS, SubjectDirectionEnum.DEBIT, auxiliaries,
                                 DateUtils.format(item.getVoucherDate(), "yyyy-MM"));
-                        balance = balance.subtract(item.getDebitAmount());
                     } else {
                         subjectBalanceService.update(setSubject, item.getDebitAmount(),
                                 StatementSymbolEnum.PLUS, SubjectDirectionEnum.DEBIT, auxiliaries,
                                 DateUtils.format(item.getVoucherDate(), "yyyy-MM"));
-                        balance = balance.add(item.getDebitAmount());
                     }
                 }
                 // 贷方，更新科目余额和科目余额表
@@ -1004,29 +996,14 @@ public class VoucherServiceImpl extends ServiceImpl<VoucherMapper, Voucher> impl
                         subjectBalanceService.update(setSubject, item.getCreditAmount(),
                                 StatementSymbolEnum.PLUS, SubjectDirectionEnum.CREDIT, auxiliaries,
                                 DateUtils.format(item.getVoucherDate(), "yyyy-MM"));
-                        balance = balance.add(item.getCreditAmount());
                     } else {
                         subjectBalanceService.update(setSubject, item.getCreditAmount(),
                                 StatementSymbolEnum.MINUS, SubjectDirectionEnum.CREDIT, auxiliaries,
                                 DateUtils.format(item.getVoucherDate(), "yyyy-MM"));
-                        balance = balance.subtract(item.getCreditAmount());
                     }
                 }
 
-                if (!isCancel) {
-                    item.setSubjectBalance(balance);
-                }
-
-                // 更新科目余额
-                setSubject.setBalance(balance);
-                BigDecimal finalBalance = balance;
-                parentSubjects = parentSubjects.stream()
-                        .filter(sb -> !sb.getId().equals(setSubject.getId()))
-                        .peek(sb -> sb.setBalance(finalBalance)).toList();
-                bookSubjectService.updateBatchById(parentSubjects);
             });
-
-            bookSubjectService.updateBatchById(booksSubjects);
         }
     }
 

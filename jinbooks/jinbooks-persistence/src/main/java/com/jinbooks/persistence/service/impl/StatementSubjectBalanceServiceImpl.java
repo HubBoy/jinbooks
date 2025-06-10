@@ -44,6 +44,8 @@ import com.jinbooks.persistence.service.ConfigSysService;
 import com.jinbooks.persistence.service.StatementSubjectBalanceService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -434,4 +436,15 @@ public class StatementSubjectBalanceServiceImpl implements StatementSubjectBalan
         subjectBalanceMapper.insertBatch(subjectBalanceList);
         return true;
     }
+
+	@Override
+	public List<StatementSubjectBalance> selectSubjectBalance(String bookId, List<String> subjectCodes) {
+		String currentTerm = configSysService.getCurrentTerm(bookId);
+		 LambdaQueryWrapper<StatementSubjectBalance> queryWrapper = new LambdaQueryWrapper<>();
+		 queryWrapper.eq(StatementSubjectBalance::getBookId, bookId);
+		 queryWrapper.eq(StatementSubjectBalance::getYearPeriod, currentTerm);
+		 queryWrapper.eq(StatementSubjectBalance::getPeriodType, StatementPeriodTypeEnum.MONTH.getValue());
+		 queryWrapper.in(CollectionUtils.isNotEmpty(subjectCodes),StatementSubjectBalance::getSubjectCode, subjectCodes);
+		 return subjectBalanceMapper.selectList(queryWrapper);
+	}
 }

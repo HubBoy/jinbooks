@@ -206,34 +206,6 @@ public class BookInitBalanceServiceImpl extends ServiceImpl<BookInitBalanceMappe
         // 更新科目余额
         Map<String, BookSubject> map = new HashMap<>();
         List<String> codes = bookInitBalances.stream().map(BookInitBalance::getCode).toList();
-        LambdaQueryWrapper<BookSubject> subjectLqw = Wrappers.lambdaQuery();
-        subjectLqw.in(BookSubject::getCode, codes);
-        subjectLqw.eq(BookSubject::getBookId, dtos.get(0).getBookId());
-        List<BookSubject> bookSubjects = bookSubjectMapper.selectList(subjectLqw);
-        List<BookSubject> updateSubjects = new ArrayList<>();
-        if (!bookSubjects.isEmpty()) {
-            map = bookSubjects.stream()
-                    .collect(Collectors.toMap(BookSubject::getCode, bookSubject -> bookSubject));
-            for (BookInitBalance bookInitBalance : bookInitBalances) {
-                BookSubject bookSubject = map.get(bookInitBalance.getCode());
-                if (bookSubject != null) {
-                    if (bookSubject.getBalance() == null) {
-                        bookSubject.setBalance(BigDecimal.ZERO);
-                    }
-                    if (bookInitBalance.getBalance() == null) {
-                        bookInitBalance.setBalance(BigDecimal.ZERO);
-                    }
-                    if (!BigDecimal.ZERO.equals(bookInitBalance.getBalance())
-                            && !bookSubject.getBalance().equals(bookInitBalance.getBalance())) {
-                        bookSubject.setBalance(bookInitBalance.getBalance());
-                        updateSubjects.add(bookSubject);
-                    }
-                }
-            }
-        }
-        if (!updateSubjects.isEmpty()) {
-            bookSubjectMapper.updateBatchById(updateSubjects);
-        }
 
         // 更新科目余额表
         LambdaQueryWrapper<StatementSubjectBalance> balanceLqw = Wrappers.lambdaQuery();
