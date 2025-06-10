@@ -1,12 +1,12 @@
 /*
  * Copyright [2025] [JinBooks of copyright http://www.jinbooks.com]
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  */
- 
+
 
 package com.jinbooks.persistence.service.impl;
 
@@ -80,7 +80,7 @@ public class EmployeeSalarySummaryServiceImpl extends ServiceImpl<EmployeeSalary
 
     @Autowired
     BookSubjectMapper bookSubjectMapper;
-    
+
     @Autowired
     ConfigSysService configSysService;
 
@@ -182,7 +182,7 @@ public class EmployeeSalarySummaryServiceImpl extends ServiceImpl<EmployeeSalary
             };
 
             boolean isDebit = "1".equals(rule.getDirection());
-            voucherItems.add(createVoucherItemDto(rule, isDebit, amount));
+            voucherItems.add(createVoucherItemDto(bookId, rule, isDebit, amount));
 
             if (isDebit) {
                 debitAmount = debitAmount.add(amount);
@@ -259,14 +259,17 @@ public class EmployeeSalarySummaryServiceImpl extends ServiceImpl<EmployeeSalary
     /**
      * Creates a voucher item dto based on rule and direction
      */
-    private VoucherItemChangeDto createVoucherItemDto(
+    private VoucherItemChangeDto createVoucherItemDto(String bookId,
             EmployeeSalaryVoucherRule rule, boolean isDebit, BigDecimal amount) {
 
-        BookSubject bookSubject = bookSubjectMapper.selectById(rule.getSubjectId());
+        LambdaQueryWrapper<BookSubject> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(BookSubject::getBookId, bookId);
+        wrapper.eq(BookSubject::getCode, rule.getSubjectCode());
+        BookSubject bookSubject = bookSubjectMapper.selectOne(wrapper);
 
         VoucherItemChangeDto itemDto = new VoucherItemChangeDto();
         itemDto.setSummary(rule.getSummary());
-        itemDto.setSubjectId(rule.getSubjectId());
+        itemDto.setSubjectId(bookSubject.getId());
         if (isDebit) {
             itemDto.setDebitAmount(amount);
         } else {

@@ -37,7 +37,7 @@
               <el-cascader
                   style="width: 100%"
                   filterable
-                  v-model="scope.row.subjectId"
+                  v-model="scope.row.subjectCode"
                   :options="deptOptions"
                   :props="defaultProps"
               />
@@ -121,7 +121,7 @@ const props: any = defineProps({
 const defaultProps: any = ref({
   expandTrigger: 'hover',
   label: 'name',
-  value: 'id',
+  value: 'code',
   children: 'children',
   checkStrictly: false,
   emitPath: false,
@@ -145,7 +145,7 @@ interface VoucherItem {
   id: null;
   summary: string;
   direction: string;
-  subjectId: number | null;
+  subjectCode: string | null;
   selectedValue: string;
   // 其他可能的字段...
   [key: string]: any; // 这允许添加其他可能从后端返回的字段
@@ -193,7 +193,7 @@ function reset(): any {
     id: null,
     summary: summaryTemplate,
     direction: "1",
-    subjectId: props.deptOptions?.[0]?.id || null,
+    subjectCode: props.deptOptions?.[0]?.code || null,
     selectedValue: salary_values.value[0].value,
   }]
 
@@ -209,7 +209,7 @@ function addRecord() {
     id: null,
     summary: summaryTemplate,
     direction: "1",
-    subjectId: props.deptOptions?.[0]?.id || null,
+    subjectCode: props.deptOptions?.[0]?.code || null,
     selectedValue: salary_values.value[0].value,
   });
 }

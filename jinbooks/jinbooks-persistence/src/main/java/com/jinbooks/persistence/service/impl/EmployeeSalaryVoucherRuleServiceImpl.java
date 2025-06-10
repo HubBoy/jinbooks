@@ -1,12 +1,12 @@
 /*
  * Copyright [2025] [JinBooks of copyright http://www.jinbooks.com]
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  */
- 
+
 
 package com.jinbooks.persistence.service.impl;
 
@@ -266,7 +266,7 @@ public class EmployeeSalaryVoucherRuleServiceImpl extends ServiceImpl<EmployeeSa
         // 设置属性
         rule.setSummary(dto.getSummary());
         rule.setDirection(dto.getDirection());
-        rule.setSubjectId(dto.getSubjectId());
+        rule.setSubjectCode(dto.getSubjectCode());
         rule.setSelectedValue(dto.getSelectedValue());
         // 设置其他属性...
         return rule;
@@ -276,7 +276,7 @@ public class EmployeeSalaryVoucherRuleServiceImpl extends ServiceImpl<EmployeeSa
         // 更新属性
         rule.setSummary(dto.getSummary());
         rule.setDirection(dto.getDirection());
-        rule.setSubjectId(dto.getSubjectId());;
+        rule.setSubjectCode(dto.getSubjectCode());
         rule.setSelectedValue(dto.getSelectedValue());
         // 更新其他属性...
     }
