@@ -139,31 +139,31 @@
           <el-table-column prop="totalSocialInsurance" label="代扣社保合计" align="center" width="110"
                            :show-overflow-tooltip="true">
             <template #default="scope">
-              {{ formatAmount(scope.row.totalSocialInsurance) }}
+              <span class="red-font">{{ formatAmount(scope.row.totalSocialInsurance) }}</span>
             </template>
           </el-table-column>
           <el-table-column prop="providentFund" label="代扣公积金" align="center" width="100"
                            :show-overflow-tooltip="true">
             <template #default="scope">
-              {{ formatAmount(scope.row.providentFund) }}
+              <span class="red-font">{{ formatAmount(scope.row.providentFund) }}</span>
             </template>
           </el-table-column>
           <el-table-column prop="attendance" label="请假考勤" align="center" width="100"
                            :show-overflow-tooltip="true">
             <template #default="scope">
-              {{ formatAmount(scope.row.attendance) }}
+              <span class="red-font">{{ formatAmount(scope.row.attendance) }}</span>
             </template>
           </el-table-column>
           <el-table-column prop="otherDeductions" label="其他扣额" align="center" width="100"
                            :show-overflow-tooltip="true">
             <template #default="scope">
-              {{ formatAmount(scope.row.otherDeductions) }}
+              <span class="red-font">{{ formatAmount(scope.row.otherDeductions) }}</span>
             </template>
           </el-table-column>
           <el-table-column prop="personalTax" label="个税" align="center" width="100"
                            :show-overflow-tooltip="true">
             <template #default="scope">
-              {{ formatAmount(scope.row.personalTax) }}
+              <span class="red-font">{{ formatAmount(scope.row.personalTax) }}</span>
             </template>
           </el-table-column>
         </el-table-column>
@@ -372,11 +372,31 @@ const getSummaries = () => {
     sums[10] = tableSummary.overtime;
     sums[11] = tableSummary.allowance;
     sums[12] = tableSummary.backPay;
-    sums[13] = tableSummary.totalSocialInsurance;
-    sums[14] = tableSummary.providentFund;
-    sums[15] = tableSummary.attendance;
-    sums[16] = tableSummary.otherDeductions;
-    sums[17] = tableSummary.personalTax;
+    sums[13] = h('div', {
+      style: {
+        color: 'red',
+      }
+    }, [formatAmount(tableSummary.totalSocialInsurance),]);
+    sums[14] = h('div', {
+      style: {
+        color: 'red',
+      }
+    }, [formatAmount(tableSummary.providentFund),]);
+    sums[15] = h('div', {
+      style: {
+        color: 'red',
+      }
+    }, [formatAmount(tableSummary.attendance),]);
+    sums[16] = h('div', {
+      style: {
+        color: 'red',
+      }
+    }, [formatAmount(tableSummary.otherDeductions),]);
+    sums[17] = h('div', {
+      style: {
+        color: 'red',
+      }
+    }, [formatAmount(tableSummary.personalTax),]);
     sums[18] = tableSummary.businessSocialInsurance;
     sums[19] = tableSummary.businessProvidentFund;
     sums[20] = tableSummary.taxDeduction;
@@ -526,5 +546,9 @@ getList()
 .app-container {
   padding: 0;
   background-color: #f5f7fa;
+}
+
+.red-font {
+  color: red;
 }
 </style>

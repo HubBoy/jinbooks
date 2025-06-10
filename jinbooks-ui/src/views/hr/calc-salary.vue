@@ -94,7 +94,7 @@
               {{ formatAmount(scope.row.laborFee) }}
             </template>
           </el-table-column>
-          
+
           <el-table-column prop="bonus" label="奖金" align="right" width="100"
                            :show-overflow-tooltip="true">
             <template #default="scope">
@@ -124,31 +124,31 @@
           <el-table-column prop="totalSocialInsurance" label="代扣社保合计" align="right" width="110"
                            :show-overflow-tooltip="true">
             <template #default="scope">
-              {{ formatAmount(scope.row.totalSocialInsurance) }}
+              <span class="red-font">{{ formatAmount(scope.row.totalSocialInsurance) }}</span>
             </template>
           </el-table-column>
           <el-table-column prop="providentFund" label="代扣公积金" align="right" width="100"
                            :show-overflow-tooltip="true">
             <template #default="scope">
-              {{ formatAmount(scope.row.providentFund) }}
+              <span class="red-font">{{ formatAmount(scope.row.providentFund) }}</span>
             </template>
           </el-table-column>
           <el-table-column prop="attendance" label="请假考勤" align="right" width="100"
                            :show-overflow-tooltip="true">
             <template #default="scope">
-              {{ formatAmount(scope.row.attendance) }}
+              <span class="red-font">{{ formatAmount(scope.row.attendance) }}</span>
             </template>
           </el-table-column>
           <el-table-column prop="otherDeductions" label="其他扣额" align="right" width="100"
                            :show-overflow-tooltip="true">
             <template #default="scope">
-              {{ formatAmount(scope.row.otherDeductions) }}
+              <span class="red-font">{{ formatAmount(scope.row.otherDeductions) }}</span>
             </template>
           </el-table-column>
           <el-table-column prop="personalTax" label="个税" align="right" width="100"
                            :show-overflow-tooltip="true">
             <template #default="scope">
-              {{ formatAmount(scope.row.personalTax) }}
+              <span class="red-font">{{ formatAmount(scope.row.personalTax) }}</span>
             </template>
           </el-table-column>
         </el-table-column>
@@ -344,5 +344,9 @@ getList();
 .app-container {
   padding: 0;
   background-color: #f5f7fa;
+}
+
+.red-font {
+  color: red;
 }
 </style>
