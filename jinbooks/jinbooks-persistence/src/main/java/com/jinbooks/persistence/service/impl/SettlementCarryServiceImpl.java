@@ -223,8 +223,8 @@ public class SettlementCarryServiceImpl extends ServiceImpl<SettlementMapper, Se
 	private boolean addVoucherItems(String bookId,String subjectCode,List<VoucherItemChangeDto> items,VoucherTemplateItem templateItem) {
 		List<BookSubject> subjectList = bookSubjectService.selectSubjectAndChild(bookId, subjectCode);
 		for(BookSubject s : subjectList ) {
-			if(isLeafSubject(s,subjectList) && s.getBalance().compareTo(BigDecimal.ZERO) > 0) {
-				items.add(createVoucherItemDtoBySubject(bookId,s,templateItem,s.getBalance()));
+			if(isLeafSubject(s,subjectList) && s.getBalance().compareTo(BigDecimal.ZERO) != 0) {
+				items.add(createVoucherItemDtoBySubject(bookId,s,templateItem,s.getBalance().abs()));
 			}
 		}
 		return true;
