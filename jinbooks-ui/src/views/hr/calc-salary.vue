@@ -124,31 +124,31 @@
           <el-table-column prop="totalSocialInsurance" label="代扣社保合计" align="right" width="110"
                            :show-overflow-tooltip="true">
             <template #default="scope">
-              <span class="red-font">{{ formatAmount(scope.row.totalSocialInsurance) }}</span>
+              <span :class="{ 'red-font': scope.row.totalSocialInsurance > 0 }">{{ formatAmount(scope.row.totalSocialInsurance) }}</span>
             </template>
           </el-table-column>
           <el-table-column prop="providentFund" label="代扣公积金" align="right" width="100"
                            :show-overflow-tooltip="true">
             <template #default="scope">
-              <span class="red-font">{{ formatAmount(scope.row.providentFund) }}</span>
+              <span :class="{ 'red-font': scope.row.providentFund > 0 }">{{ formatAmount(scope.row.providentFund) }}</span>
             </template>
           </el-table-column>
           <el-table-column prop="attendance" label="请假考勤" align="right" width="100"
                            :show-overflow-tooltip="true">
             <template #default="scope">
-              <span class="red-font">{{ formatAmount(scope.row.attendance) }}</span>
+              <span :class="{ 'red-font': scope.row.attendance > 0 }">{{ formatAmount(scope.row.attendance) }}</span>
             </template>
           </el-table-column>
           <el-table-column prop="otherDeductions" label="其他扣额" align="right" width="100"
                            :show-overflow-tooltip="true">
             <template #default="scope">
-              <span class="red-font">{{ formatAmount(scope.row.otherDeductions) }}</span>
+              <span :class="{ 'red-font': scope.row.otherDeductions > 0 }">{{ formatAmount(scope.row.otherDeductions) }}</span>
             </template>
           </el-table-column>
           <el-table-column prop="personalTax" label="个税" align="right" width="100"
                            :show-overflow-tooltip="true">
             <template #default="scope">
-              <span class="red-font">{{ formatAmount(scope.row.personalTax) }}</span>
+              <span :class="{ 'red-font': scope.row.personalTax > 0 }">{{ formatAmount(scope.row.personalTax) }}</span>
             </template>
           </el-table-column>
         </el-table-column>

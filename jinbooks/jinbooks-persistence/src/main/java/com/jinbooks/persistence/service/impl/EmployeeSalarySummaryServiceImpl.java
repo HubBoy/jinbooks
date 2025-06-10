@@ -279,6 +279,7 @@ public class EmployeeSalarySummaryServiceImpl extends ServiceImpl<EmployeeSalary
         itemDto.setSubjectCode(bookSubject.getCode());
         itemDto.setSubjectName(bookSubject.getCode() + "-" + bookSubject.getName());
         itemDto.setDetailedAccounts("");
+//        itemDto.setSubjectBalance(BigDecimal.ZERO);
 
         return itemDto;
     }
