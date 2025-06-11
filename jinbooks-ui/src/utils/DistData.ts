@@ -2213,8 +2213,12 @@ const distData: DistData = {
             value: "companyCosts"
         },
         {
-            label: "实发工资",
+            label: "应发工资",
             value: "salaryPayable"
+        },
+        {
+            label: "实发工资",
+            value: "actualSalary"
         },
         {
             label: "个人所得税",
@@ -2235,6 +2239,20 @@ const distData: DistData = {
         {
             label: "企业缴纳公积金",
             value: "providentFundPaidByEnterprises"
+        }
+    ],
+    "labor_fee_values": [
+        {
+            label: "劳务费总额",
+            value: "companyCosts"
+        },
+        {
+            label: "实发劳务费",
+            value: "actualSalary"
+        },
+        {
+            label: "代扣个人所得税",
+            value: "personalIncomeTax"
         }
     ],
     "salary_directions": [

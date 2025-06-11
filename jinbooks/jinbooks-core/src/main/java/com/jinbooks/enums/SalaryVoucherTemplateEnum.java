@@ -1,12 +1,12 @@
 /*
  * Copyright [2025] [JinBooks of copyright http://www.jinbooks.com]
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  */
- 
+
 
 package com.jinbooks.enums;
 
@@ -29,7 +29,8 @@ import lombok.Getter;
 @Getter
 public enum SalaryVoucherTemplateEnum {
     COMPANY_COSTS("companyCosts", "公司成本"),
-    SALARY_PAYABLE("salaryPayable", "实发工资"),
+    SALARY_PAYABLE("salaryPayable", "应发工资"),
+    ACTUAL_SALARY("actualSalary", "实发工资"),
     PERSONAL_INCOME_TAX("personalIncomeTax", "个人所得税"),
     PERSONAL_WITHHOLDING_SOCIAL_SECURITY("personalWithholdingOfSocialSecurity", "个人代扣社保"),
     PERSONAL_WITHHOLDING_PROVIDENT_FUND("personalWithholdingOfProvidentFund", "个人代扣公积金"),

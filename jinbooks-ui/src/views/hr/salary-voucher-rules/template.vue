@@ -8,7 +8,7 @@
       <div class="queryForm">
         <el-form :model="form" ref="formRef" :inline="true" label-width="68px">
           <el-form-item label="凭证类型">
-            <el-select v-model="form.voucherType" style="width: 200px">
+            <el-select v-model="form.voucherType" style="width: 200px" @change="handleChangeType">
               <el-option v-for="item in voucherTypes" :label="item.label" :value="item.value"/>
             </el-select>
           </el-form-item>
@@ -47,7 +47,7 @@
                            :show-overflow-tooltip="true">
             <template #default="scope">
               <el-select v-model="scope.row.selectedValue" style="width: 100%">
-                <el-option v-for="item in salary_values" :label="item.label" :value="item.value"/>
+                <el-option v-for="item in salaryValuesList" :label="item.label" :value="item.value"/>
               </el-select>
             </template>
           </el-table-column>
@@ -89,10 +89,17 @@ import modal from "@/plugins/modal";
 const {t} = useI18n()
 const {proxy} = getCurrentInstance()!;
 
-const {salary_values, salary_directions}
-    = proxy?.useDict( "salary_values", "salary_directions");
+const {salary_values, salary_directions, labor_fee_values}
+    = proxy?.useDict( "salary_values", "salary_directions", "labor_fee_values");
 const emit: any = defineEmits(['dialogOfClosedMethods'])
 const formRef = ref<InstanceType<typeof ElForm> | null>(null);
+interface SalaryValueItem {
+  label: string
+  value: string | number
+}
+
+const salaryValuesList = ref<SalaryValueItem[]>([])
+
 const props: any = defineProps({
   title: {
     type: String,
@@ -185,35 +192,67 @@ function reset(): any {
   form.value = {
     voucherType: 0,
     wordHead: '记'
-  };
+  }
 
-  const summaryTemplate = typeTextMap[form.value.voucherType] || "";
+  // 先根据 voucherType 给 salaryValuesList 赋值
+  if (form.value.voucherType === 0 || form.value.voucherType === 1) {
+    salaryValuesList.value = salary_values.value
+  } else {
+    salaryValuesList.value = labor_fee_values.value
+  }
 
-  dataList.value = [{
-    id: null,
-    summary: summaryTemplate,
-    direction: "1",
-    subjectCode: props.deptOptions?.[0]?.code || null,
-    selectedValue: salary_values.value[0].value,
-  }]
+  // 取第一个值
+  const selectedValue = salaryValuesList.value.length > 0 ? salaryValuesList.value[0].value : null
 
-  formRef?.value?.resetFields();
+  // 设置 dataList
+  const summaryTemplate = typeTextMap[form.value.voucherType] || ""
+
+  dataList.value = [
+    {
+      id: null,
+      summary: summaryTemplate,
+      direction: "1",
+      subjectCode: props.deptOptions?.[0]?.code || null,
+      selectedValue: selectedValue,
+    }
+  ]
+
+  formRef?.value?.resetFields()
 }
 
 
-function addRecord() {
 
+function addRecord() {
   const summaryTemplate = typeTextMap[form.value.voucherType] || "";
 
+  // 根据 voucherType 先切换数据源
+  if (form.value.voucherType === 0 || form.value.voucherType === 1) {
+    salaryValuesList.value = salary_values.value;
+  } else {
+    salaryValuesList.value = labor_fee_values.value;
+  }
+
+  // 如果 salaryValuesList 为空，安全处理（防止访问 undefined）
+  const selectedValue = salaryValuesList.value.length > 0 ? salaryValuesList.value[0].value : null;
+
+  // 新增一条记录
   dataList.value.push({
     id: null,
     summary: summaryTemplate,
     direction: "1",
     subjectCode: props.deptOptions?.[0]?.code || null,
-    selectedValue: salary_values.value[0].value,
+    selectedValue: selectedValue,
   });
 }
 
+function handleChangeType() {
+  // 根据 voucherType 先切换数据源
+  if (form.value.voucherType === 0 || form.value.voucherType === 1) {
+    salaryValuesList.value = salary_values.value;
+  } else {
+    salaryValuesList.value = labor_fee_values.value;
+  }
+}
 
 function dialogOfClosedMethods(val: any): any {
   dialogStatus.value = false;
