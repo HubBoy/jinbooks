@@ -173,7 +173,8 @@ public class EmployeeSalarySummaryServiceImpl extends ServiceImpl<EmployeeSalary
 
             BigDecimal amount = switch (matchedEnum) {
                 case COMPANY_COSTS -> summary.getBusinessExpenditureCosts();
-                case SALARY_PAYABLE -> summary.getTotalAmount();
+                case SALARY_PAYABLE -> summary.getTotalAmount().add(summary.getTotalSocialInsurance()).add(summary.getProvidentFund()).add(summary.getPersonalTax());
+                case ACTUAL_SALARY -> summary.getTotalAmount();
                 case PERSONAL_INCOME_TAX -> summary.getPersonalTax();
                 case PERSONAL_WITHHOLDING_SOCIAL_SECURITY -> summary.getTotalSocialInsurance();
                 case PERSONAL_WITHHOLDING_PROVIDENT_FUND -> summary.getProvidentFund();
