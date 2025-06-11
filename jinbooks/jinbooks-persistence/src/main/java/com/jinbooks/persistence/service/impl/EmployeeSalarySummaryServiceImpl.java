@@ -268,6 +268,10 @@ public class EmployeeSalarySummaryServiceImpl extends ServiceImpl<EmployeeSalary
         wrapper.eq(BookSubject::getCode, rule.getSubjectCode());
         BookSubject bookSubject = bookSubjectMapper.selectOne(wrapper);
 
+        if (Objects.isNull(bookSubject)) {
+            throw new BusinessException(50001, "查询不到该工资凭证规则设置的账套科目，请检查。");
+        }
+
         VoucherItemChangeDto itemDto = new VoucherItemChangeDto();
         itemDto.setSummary(rule.getSummary());
         itemDto.setSubjectId(bookSubject.getId());
