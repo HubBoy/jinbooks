@@ -1,12 +1,12 @@
 /*
  * Copyright [2025] [JinBooks of copyright http://www.jinbooks.com]
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  */
- 
+
 
 package com.jinbooks.persistence.service.impl;
 
@@ -201,7 +201,8 @@ public class StatementBalanceSheetConfigServiceImpl implements StatementBalanceS
     @Override
     public void updateRuleBalance(StatementSubjectBalance subjectBalance, StatementRules statementRules) {
         if (subjectBalance != null) {
-            statementRules.setOpeningYearBalance(subjectBalance.getOpeningYearBalanceDebit().subtract(subjectBalance.getOpeningYearBalanceCredit()));
+            statementRules.setOpeningYearBalance(subjectBalance.getOpeningYearBalanceDebit()
+                    .subtract(subjectBalance.getOpeningYearBalanceCredit()));
             statementRules.setClosingBalance(subjectBalance.getBalance());
         } else {
             statementRules.setOpeningYearBalance(BigDecimal.ZERO);
@@ -230,28 +231,28 @@ public class StatementBalanceSheetConfigServiceImpl implements StatementBalanceS
         lqwRule.eq(StatementRules::getType, StatementTypeEnum.balance_sheet.name());
         List<StatementRules> rules = rulesMapper.selectList(lqwRule);
         List<String> subjectCodes = rules.stream().map(StatementRules::getSubjectCode).toList();
-        if(CollectionUtils.isNotEmpty(subjectCodes)) {
-	        // 查询科目余额
-	        LambdaQueryWrapper<StatementSubjectBalance> lqwSubject = Wrappers.lambdaQuery();
-	        lqwSubject.in(StatementSubjectBalance::getSubjectCode, subjectCodes);
-	        lqwSubject.eq(StatementSubjectBalance::getBookId, bookId);
-	        lqwSubject.eq(StatementSubjectBalance::getYearPeriod, yearPeriod);
-	        List<StatementSubjectBalance> subjectBalances = subjectBalanceMapper.selectList(lqwSubject);
-	        Map<String, StatementSubjectBalance> subjectMap = subjectBalances.stream()
-	                .collect(Collectors.toMap(StatementSubjectBalance::getSubjectCode, item -> item));
-	        // 更新对应规则的余额和报表余额
-	        for (StatementRules statementRules : rules) {
-	            StatementSubjectBalance subjectBalance = subjectMap.get(statementRules.getSubjectCode());
-	            updateRuleBalance(subjectBalance, statementRules);
-	            StatementBalanceSheetItem balanceSheet = mapSheet.get(statementRules.getItemCode());
-	            if (StatementSymbolEnum.PLUS.getValue().equals(statementRules.getSymbol())) {
-	                balanceSheet.setInitialBalance(balanceSheet.getInitialBalance().add(statementRules.getOpeningYearBalance()));
-	                balanceSheet.setCurrentBalance(balanceSheet.getCurrentBalance().add(statementRules.getClosingBalance()));
-	            } else {
-	                balanceSheet.setInitialBalance(balanceSheet.getInitialBalance().subtract(statementRules.getOpeningYearBalance()));
-	                balanceSheet.setCurrentBalance(balanceSheet.getCurrentBalance().subtract(statementRules.getClosingBalance()));
-	            }
-	        }
+        if (CollectionUtils.isNotEmpty(subjectCodes)) {
+            // 查询科目余额
+            LambdaQueryWrapper<StatementSubjectBalance> lqwSubject = Wrappers.lambdaQuery();
+            lqwSubject.in(StatementSubjectBalance::getSubjectCode, subjectCodes);
+            lqwSubject.eq(StatementSubjectBalance::getBookId, bookId);
+            lqwSubject.eq(StatementSubjectBalance::getYearPeriod, yearPeriod);
+            List<StatementSubjectBalance> subjectBalances = subjectBalanceMapper.selectList(lqwSubject);
+            Map<String, StatementSubjectBalance> subjectMap = subjectBalances.stream()
+                    .collect(Collectors.toMap(StatementSubjectBalance::getSubjectCode, item -> item));
+            // 更新对应规则的余额和报表余额
+            for (StatementRules statementRules : rules) {
+                StatementSubjectBalance subjectBalance = subjectMap.get(statementRules.getSubjectCode());
+                updateRuleBalance(subjectBalance, statementRules);
+                StatementBalanceSheetItem balanceSheet = mapSheet.get(statementRules.getItemCode());
+                if (StatementSymbolEnum.PLUS.getValue().equals(statementRules.getSymbol())) {
+                    balanceSheet.setInitialBalance(balanceSheet.getInitialBalance().add(statementRules.getOpeningYearBalance()));
+                    balanceSheet.setCurrentBalance(balanceSheet.getCurrentBalance().add(statementRules.getClosingBalance()));
+                } else {
+                    balanceSheet.setInitialBalance(balanceSheet.getInitialBalance().subtract(statementRules.getOpeningYearBalance()));
+                    balanceSheet.setCurrentBalance(balanceSheet.getCurrentBalance().subtract(statementRules.getClosingBalance()));
+                }
+            }
         }
     }
 
@@ -337,8 +338,11 @@ public class StatementBalanceSheetConfigServiceImpl implements StatementBalanceS
                 }
                 node.setCurrentBalance(currentSum);
                 node.setInitialBalance(initialSum);
-                initialAllSum[0] = initialAllSum[0].add(initialSum);
-                currentAllSum[0] = currentAllSum[0].add(currentSum);
+                // 避免重复叠加总额，因为节点可能被多次引用，如1199_1299
+                if (codes.length == 1) {
+                    initialAllSum[0] = initialAllSum[0].add(initialSum);
+                    currentAllSum[0] = currentAllSum[0].add(currentSum);
+                }
 
                 // 获取最大节点，一般为总计项
                 if (maxNode[0] == null || node.getItemCode().compareTo(maxNode[0].getItemCode()) > 0) {
