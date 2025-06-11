@@ -21,8 +21,9 @@ package com.jinbooks.persistence.mapper;
 import com.jinbooks.entity.statement.StatementSubjectBalance;
 import com.jinbooks.mapper.BaseMapperPlus;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 
 @Mapper
 public interface StatementSubjectBalanceMapper extends BaseMapperPlus<StatementSubjectBalanceMapper, StatementSubjectBalance, StatementSubjectBalance> {
-
 }

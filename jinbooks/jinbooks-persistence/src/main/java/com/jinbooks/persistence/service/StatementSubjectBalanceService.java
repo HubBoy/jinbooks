@@ -32,6 +32,8 @@ import java.util.List;
  * 科目余额表业务接口
  */
 public interface StatementSubjectBalanceService {
+    StatementSubjectBalance getSubjectBalance(String bookId, String subjectCode);
+
     boolean hasVoucher(String bookId, List<String> codes);
 
     boolean hasVoucherByCodes(String bookId, List<String> codes);

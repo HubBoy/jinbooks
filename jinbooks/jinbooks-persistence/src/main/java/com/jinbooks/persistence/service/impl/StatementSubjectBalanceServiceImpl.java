@@ -66,6 +66,14 @@ public class StatementSubjectBalanceServiceImpl implements StatementSubjectBalan
     private final IdentifierGenerator identifierGenerator;
     private final VoucherItemMapper voucherItemMapper;
 
+    @Override
+    public StatementSubjectBalance getSubjectBalance(String bookId, String subjectCode) {
+        LambdaQueryWrapper<StatementSubjectBalance> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(StatementSubjectBalance::getBookId, bookId);
+        queryWrapper.eq(StatementSubjectBalance::getSubjectCode, subjectCode);
+        return subjectBalanceMapper.selectOne(queryWrapper);
+    }
+
     /**
      * 判断科目是否有凭证
      *
