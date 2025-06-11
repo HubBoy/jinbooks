@@ -135,7 +135,7 @@ public class StatementBalanceSheetConfigServiceImpl implements StatementBalanceS
 //        updateSortIndex(dto, StatementSymbolEnum.PLUS);
         statementBalanceSheetItemMapper.updateById(dto);
         // 规则更新
-        if (dto.getRules() != null && !dto.getRules().isEmpty()) {
+        if (dto.getRules() != null) {
             for (StatementRules rule : dto.getRules()) {
                 rule.setItemCode(dto.getItemCode());
                 rule.setBookId(dto.getBookId());

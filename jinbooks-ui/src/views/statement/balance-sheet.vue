@@ -99,14 +99,14 @@
             </template>
           </el-table-column>
           <el-table-column label="行次" align="center" prop="sortIndex" width="100"/>
-          <el-table-column label="年初余额" align="right" header-align="center" width="140" prop="initialBalance">
-            <template #default="scope">
-              {{ formatAmount(scope.row.initialBalance, '') }}
-            </template>
-          </el-table-column>
           <el-table-column label="期末余额" align="right" header-align="center" width="140" prop="currentBalance">
             <template #default="scope">
               {{ formatAmount(scope.row.currentBalance, '') }}
+            </template>
+          </el-table-column>
+          <el-table-column label="年初余额" align="right" header-align="center" width="140" prop="initialBalance">
+            <template #default="scope">
+              {{ formatAmount(scope.row.initialBalance, '') }}
             </template>
           </el-table-column>
           <el-table-column v-if="ableEdit" label="操作" align="center" width="100">
@@ -128,16 +128,16 @@
             </template>
           </el-table-column>
           <el-table-column label="行次" align="center" width="100" prop="liabilitySortIndex"/>
+           <el-table-column label="期末余额" align="right" header-align="center" width="140"
+                           prop="liabilityCurrentBalance">
+            <template #default="scope">
+              {{ formatAmount(scope.row.liabilityCurrentBalance, '') }}
+            </template>
+          </el-table-column>
           <el-table-column label="年初余额" align="right" header-align="center" width="140"
                            prop="liabilityInitialBalance">
             <template #default="scope">
               {{ formatAmount(scope.row.liabilityInitialBalance, '') }}
-            </template>
-          </el-table-column>
-          <el-table-column label="期末余额" align="right" header-align="center" width="140"
-                           prop="liabilityCurrentBalance">
-            <template #default="scope">
-              {{ formatAmount(scope.row.liabilityCurrentBalance, '') }}
             </template>
           </el-table-column>
 
