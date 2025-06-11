@@ -59,7 +59,7 @@ public class StatementIncomeController {
         dto.setBookId(userInfo.getBookId());
         validParams(dto);
         log.debug("StatementParamsDto {} ", dto);
-        return statementIncomeService.getIncomeStatement(dto, true);
+        return statementIncomeService.getIncomeStatement(dto, false);
     }
 
     /**

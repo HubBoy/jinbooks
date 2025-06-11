@@ -126,9 +126,7 @@ public class StatementBalanceSheetServiceImpl implements StatementBalanceSheetSe
                     balanceSheetConfigService.refreshItemsBalance(items, dto.getBookId(), month);
                 }
             }
-        }
-        // 拉取历史数据
-        else {
+        }else {// 拉取历史数据
             // 查询条目
             LambdaQueryWrapper<StatementBalanceSheetItem> itemLqw = Wrappers.lambdaQuery();
             itemLqw.eq(StatementBalanceSheetItem::getBookId, dto.getBookId());
