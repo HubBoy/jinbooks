@@ -20,6 +20,7 @@ package com.jinbooks.persistence.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.jinbooks.constants.ConstsSysConfig;
 import com.jinbooks.entity.Message;
 import com.jinbooks.entity.statement.StatementBalanceSheet;
 import com.jinbooks.entity.statement.StatementBalanceSheetItem;
@@ -67,10 +68,9 @@ public class StatementBalanceSheetConfigServiceImpl implements StatementBalanceS
      */
     @Override
     public Message<StatementBalanceSheetItem> get(String bookId, String itemCode) {
-        StatementBalanceSheet balanceSheet = getBalanceSheetCurrentPeriod(bookId);
         LambdaQueryWrapper<StatementBalanceSheetItem> itemLqw = Wrappers.lambdaQuery();
         itemLqw.eq(StatementBalanceSheetItem::getBookId, bookId);
-        itemLqw.eq(StatementBalanceSheetItem::getBalanceSheetId, balanceSheet.getId());
+        itemLqw.eq(StatementBalanceSheetItem::getBalanceSheetId, ConstsSysConfig.SYS_CONFIG_TEMPLATE_ID);
         itemLqw.eq(StatementBalanceSheetItem::getItemCode, itemCode);
         StatementBalanceSheetItem balanceSheetItem = statementBalanceSheetItemMapper.selectOne(itemLqw);
 
@@ -107,12 +107,12 @@ public class StatementBalanceSheetConfigServiceImpl implements StatementBalanceS
      */
     @Override
     public Message<StatementBalanceSheetItemListVo> list(String bookId) {
-        StatementBalanceSheet balanceSheet = getBalanceSheetCurrentPeriod(bookId);
+        //StatementBalanceSheet balanceSheet = getBalanceSheetCurrentPeriod(bookId);
         LambdaQueryWrapper<StatementBalanceSheetItem> lqw = Wrappers.lambdaQuery();
         lqw.eq(StatementBalanceSheetItem::getBookId, bookId);
-        lqw.eq(StatementBalanceSheetItem::getBalanceSheetId, balanceSheet.getId());
+        lqw.eq(StatementBalanceSheetItem::getBalanceSheetId, ConstsSysConfig.SYS_CONFIG_TEMPLATE_ID);
         List<StatementBalanceSheetItem> balanceSheets = statementBalanceSheetItemMapper.selectList(lqw);
-        refreshItemsBalance(balanceSheets, bookId, balanceSheet.getYearPeriod());
+        refreshItemsBalance(balanceSheets, bookId, configSysService.getCurrentTerm(bookId));
         StatementBalanceSheetItemListVo itemListVo = insertSubtotals(balanceSheets);
         itemListVo.getAssets().sort(Comparator.comparing(StatementBalanceSheetItem::getItemCode));
         itemListVo.getLiability().sort(Comparator.comparing(StatementBalanceSheetItem::getItemCode));
@@ -135,7 +135,7 @@ public class StatementBalanceSheetConfigServiceImpl implements StatementBalanceS
 //        updateSortIndex(dto, StatementSymbolEnum.PLUS);
         statementBalanceSheetItemMapper.updateById(dto);
         // 规则更新
-        if (dto.getRules() != null && !dto.getRules().isEmpty()) {
+        if (dto.getRules() != null) {
             for (StatementRules rule : dto.getRules()) {
                 rule.setItemCode(dto.getItemCode());
                 rule.setBookId(dto.getBookId());

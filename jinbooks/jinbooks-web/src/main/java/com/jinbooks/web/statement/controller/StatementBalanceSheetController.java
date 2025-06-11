@@ -57,7 +57,7 @@ public class StatementBalanceSheetController {
                                                   @CurrentUser UserInfo userInfo) {
         dto.setBookId(userInfo.getBookId());
         validParams(dto);
-        return statementBalanceSheetService.queryBalanceSheet(dto, true);
+        return statementBalanceSheetService.queryBalanceSheet(dto, false);
     }
 
     /**
