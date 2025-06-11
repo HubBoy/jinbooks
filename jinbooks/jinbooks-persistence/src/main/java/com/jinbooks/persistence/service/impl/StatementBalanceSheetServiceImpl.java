@@ -115,10 +115,10 @@ public class StatementBalanceSheetServiceImpl implements StatementBalanceSheetSe
                         item.setBookId(dto.getBookId());
                         item.setInitialBalance(BigDecimal.ZERO);
                         item.setCurrentBalance(BigDecimal.ZERO);
-                        balanceSheetItemMapper.insert(item);
+                        //balanceSheetItemMapper.insert(item);
                     }
 
-                    balanceSheetMapper.insert(balanceSheet);
+                    //balanceSheetMapper.insert(balanceSheet);
                 }
 
                 // 遍历月份，统计总金额
