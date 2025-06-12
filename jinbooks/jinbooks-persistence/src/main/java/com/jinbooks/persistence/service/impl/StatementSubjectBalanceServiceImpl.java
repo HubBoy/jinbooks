@@ -25,6 +25,7 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jinbooks.entity.Message;
 import com.jinbooks.entity.SubjectAuxiliary;
 import com.jinbooks.entity.base.AssistAcc;
 import com.jinbooks.entity.book.BookSubject;
@@ -72,6 +73,16 @@ public class StatementSubjectBalanceServiceImpl implements StatementSubjectBalan
         queryWrapper.eq(StatementSubjectBalance::getBookId, bookId);
         queryWrapper.eq(StatementSubjectBalance::getSubjectCode, subjectCode);
         return subjectBalanceMapper.selectOne(queryWrapper);
+    }
+    
+    @Override
+    public Message<StatementSubjectBalance> getSubjectBalance(StatementSubjectBalance params) {
+        LambdaQueryWrapper<StatementSubjectBalance> lqw = Wrappers.lambdaQuery();
+        lqw.eq(StatementSubjectBalance::getBookId, params.getBookId());
+        lqw.eq(StringUtils.isNotBlank(params.getSubjectCode()), StatementSubjectBalance::getSubjectCode, params.getSubjectCode());
+        lqw.eq(StringUtils.isNotBlank(params.getSourceId()), StatementSubjectBalance::getSourceId, params.getSourceId());
+        lqw.eq(StringUtils.isNotBlank(params.getYearPeriod()), StatementSubjectBalance::getYearPeriod, params.getYearPeriod());
+        return Message.ok(subjectBalanceMapper.selectOne(lqw));
     }
 
     /**

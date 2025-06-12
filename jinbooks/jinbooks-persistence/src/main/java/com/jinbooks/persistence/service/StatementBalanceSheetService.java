@@ -22,7 +22,12 @@ import com.jinbooks.entity.Message;
 import com.jinbooks.entity.book.Settlement;
 import com.jinbooks.entity.book.dto.BookChangeDto;
 import com.jinbooks.entity.statement.StatementBalanceSheet;
+import com.jinbooks.entity.statement.StatementBalanceSheetItem;
+import com.jinbooks.entity.statement.StatementRules;
+import com.jinbooks.entity.statement.StatementSubjectBalance;
 import com.jinbooks.entity.statement.dto.StatementParamsDto;
+import com.jinbooks.entity.statement.vo.StatementBalanceSheetItemListVo;
+
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
@@ -51,4 +56,12 @@ public interface StatementBalanceSheetService {
     boolean checkout(Settlement dto) ;
 
     void export(StatementParamsDto dto, HttpServletResponse response) throws IOException;
+
+    void updateRuleBalance(StatementSubjectBalance subjectBalance, StatementRules statementRules);
+
+    void refreshItemsBalance(List<StatementBalanceSheetItem> items,
+                             String bookId, String yearPeriod);
+
+    StatementBalanceSheetItemListVo insertSubtotals(List<StatementBalanceSheetItem> items);
+    
 }

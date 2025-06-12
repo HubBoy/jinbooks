@@ -179,19 +179,25 @@
 <!--          <el-form-item label="编码" prop="itemCode">-->
 <!--            <el-input disabled style="width: 300px" v-model="form.itemCode" placeholder="请输入编码"/>-->
 <!--          </el-form-item>-->
+          <el-form-item label="编码" prop="itemCode">
+            <el-input style="width: 300px" v-model="form.itemCode" placeholder="请输入编码" disabled/>
+          </el-form-item>
           <el-form-item label="名称" prop="itemName">
             <el-input style="width: 300px" v-model="form.itemName" placeholder="请输入名称"/>
           </el-form-item>
 <!--          <el-form-item label="行号" prop="sortIndex">-->
 <!--            <el-input-number disabled :min="1" v-model="form.sortIndex" placeholder="请输入行号"/>-->
 <!--          </el-form-item>-->
-          <el-form-item v-if="form.level === 2" label="合计规则" prop="symbol">
+          <el-form-item v-if="form.level === 2" label="计算" prop="symbol">
             <el-radio-group v-model="form.symbol">
               <el-radio-button label="加" value="+"/>
               <el-radio-button label="减" value="-"/>
+              <el-radio-button label="函数" value="f"/>
             </el-radio-group>
           </el-form-item>
-
+          <el-form-item label="行号" prop="sortIndex">
+            <el-input-number :min="1" v-model="form.sortIndex" placeholder="请输入行号"/>
+          </el-form-item>
           <el-table v-if="form.level !== 1" v-loading="loading" :data="form.rules" border size="small"
                     :cell-class-name="tableCellClassName"
                     @cell-click="cellMouseEnter"

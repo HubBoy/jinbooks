@@ -22,7 +22,8 @@ import com.jinbooks.authn.annotation.CurrentUser;
 import com.jinbooks.entity.Message;
 import com.jinbooks.entity.idm.UserInfo;
 import com.jinbooks.entity.statement.StatementSubjectBalance;
-import com.jinbooks.persistence.service.StatementBalanceSheetConfigService;
+import com.jinbooks.persistence.service.StatementSubjectBalanceService;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -36,7 +37,7 @@ import org.springframework.web.bind.annotation.*;
 @Slf4j
 @RequiredArgsConstructor
 public class StatementSubjectBalanceController {
-    private final StatementBalanceSheetConfigService configService;
+    private final StatementSubjectBalanceService statementSubjectBalanceService;
 
     /**
      * 获取单个
@@ -45,7 +46,7 @@ public class StatementSubjectBalanceController {
     public Message<StatementSubjectBalance> getSubjectBalance(StatementSubjectBalance params,
                                                             @CurrentUser UserInfo userInfo) {
         params.setBookId(userInfo.getBookId());
-        return configService.getSubjectBalance(params);
+        return statementSubjectBalanceService.getSubjectBalance(params);
     }
 
 }

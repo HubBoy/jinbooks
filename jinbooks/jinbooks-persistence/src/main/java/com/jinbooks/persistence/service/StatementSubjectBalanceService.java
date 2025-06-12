@@ -18,6 +18,7 @@
 
 package com.jinbooks.persistence.service;
 
+import com.jinbooks.entity.Message;
 import com.jinbooks.entity.book.BookSubject;
 import com.jinbooks.entity.book.Settlement;
 import com.jinbooks.entity.statement.StatementSubjectBalance;
@@ -33,6 +34,8 @@ import java.util.List;
  */
 public interface StatementSubjectBalanceService {
     StatementSubjectBalance getSubjectBalance(String bookId, String subjectCode);
+    
+    public Message<StatementSubjectBalance> getSubjectBalance(StatementSubjectBalance params);
 
     boolean hasVoucher(String bookId, List<String> codes);
 

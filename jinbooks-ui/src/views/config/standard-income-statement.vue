@@ -71,11 +71,11 @@
             <el-input style="width: 300px" v-model="form.itemName" placeholder="请输入名称"/>
           </el-form-item>
           <el-form-item label="计算" prop="symbol">
-            <el-select  v-model="form.symbol" placeholder="选择" style="width: 300px">
-                  <el-option label="加" value="+"></el-option>
-                  <el-option label="减" value="-"></el-option>
-                  <el-option label="f" value="f"></el-option>
-                </el-select>
+            <el-radio-group v-model="form.symbol">
+              <el-radio-button label="加" value="+"/>
+              <el-radio-button label="减" value="-"/>
+              <el-radio-button label="函数" value="f"/>
+            </el-radio-group>
           </el-form-item>
           <el-form-item label="行号" prop="sortIndex">
             <el-input-number :min="1" v-model="form.sortIndex" placeholder="请输入行号"/>

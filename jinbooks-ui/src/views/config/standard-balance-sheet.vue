@@ -103,10 +103,11 @@
           <el-form-item v-if="form.level > 1" label="编码" prop="itemCode">
             <el-input style="width: 300px" v-model="form.itemCode" placeholder="请输入编码"/>
           </el-form-item>
-          <el-form-item v-if="form.level === 2" label="合计规则" prop="symbol">
+          <el-form-item v-if="form.level === 2" label="计算" prop="symbol">
             <el-radio-group v-model="form.symbol">
               <el-radio-button label="加" value="+"/>
               <el-radio-button label="减" value="-"/>
+              <el-radio-button label="函数" value="f"/>
             </el-radio-group>
           </el-form-item>
           <el-form-item v-if="form.level > 1" label="取数规则" prop="rule">

@@ -49,12 +49,5 @@ public interface StatementBalanceSheetConfigService {
 
     Message<Boolean> delete(String id);
 
-    Message<StatementSubjectBalance> getSubjectBalance(StatementSubjectBalance params);
 
-    void updateRuleBalance(StatementSubjectBalance subjectBalance, StatementRules statementRules);
-
-    void refreshItemsBalance(List<StatementBalanceSheetItem> items,
-                             String bookId, String yearPeriod);
-
-    StatementBalanceSheetItemListVo insertSubtotals(List<StatementBalanceSheetItem> items);
 }
