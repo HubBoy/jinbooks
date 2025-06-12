@@ -57,3 +57,10 @@ export function exportSalary(query: any): any {
     })
 }
 
+export function generateVoucherSubmit(data: any) {
+    return request({
+        url: '/employee/salary/generate-voucher',
+        method: 'post',
+        data: data
+    })
+}

@@ -182,11 +182,11 @@
         </el-table-column>
         <el-table-column prop="accrualVoucherId" label="计提/收票凭证" align="center" fixed="right" width="90">
           <template #default="scope">
-            <el-button v-if="(scope.row.accrualVoucherId === null ||scope.row.accrualVoucherId ==='')" type="text"
-                       @click="generateVoucher(scope.row,scope.row.label === 'salary'? 0 : 2)">
+            <el-button v-if="(scope.row.accrualVoucherId === null ||scope.row.accrualVoucherId ==='') && scope.row.label === 'salary'" type="text"
+                       @click="generateVoucher(scope.row,0)">
               生成
             </el-button>
-            <el-button v-if="scope.row.accrualVoucherId !== null &&scope.row.accrualVoucherId !==''" type="text"
+            <el-button v-if="scope.row.accrualVoucherId !== null &&scope.row.accrualVoucherId !=='' && scope.row.label === 'salary'" type="text"
                        @click="viewVoucher(scope.row.accrualVoucherId)">
               查看
             </el-button>
@@ -194,11 +194,11 @@
         </el-table-column>
         <el-table-column prop="salaryVoucherId" label="发放凭证" align="center" fixed="right" width="90">
           <template #default="scope">
-            <el-button v-if="(scope.row.salaryVoucherId === null ||scope.row.salaryVoucherId ==='')" type="text"
-                       @click="generateVoucher(scope.row,scope.row.label === 'salary'? 1 : 3)">
+            <el-button v-if="(scope.row.salaryVoucherId === null ||scope.row.salaryVoucherId ==='') && scope.row.label === 'salary'" type="text"
+                       @click="generateVoucher(scope.row,1)">
               生成
             </el-button>
-            <el-button v-if="scope.row.salaryVoucherId !== null &&scope.row.salaryVoucherId !==''" type="text"
+            <el-button v-if="scope.row.salaryVoucherId !== null &&scope.row.salaryVoucherId !=='' && scope.row.label === 'salary'" type="text"
                        @click="viewVoucher(scope.row.salaryVoucherId)">
               查看
             </el-button>

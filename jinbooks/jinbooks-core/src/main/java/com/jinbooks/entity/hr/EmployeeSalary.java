@@ -1,12 +1,12 @@
 /*
  * Copyright [2025] [JinBooks of copyright http://www.jinbooks.com]
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  */
- 
+
 
 package com.jinbooks.entity.hr;
 
@@ -113,6 +113,18 @@ public class EmployeeSalary extends BaseEntity {
      */
     private BigDecimal insuranceUnemployment;
 
+    /**
+     * 收票工资凭证编码
+     */
+    @TableField(updateStrategy = FieldStrategy.ALWAYS)
+    private String accrualVoucherId;
+
+    /**
+     * 发放工资凭证编码
+     */
+    @TableField(updateStrategy = FieldStrategy.ALWAYS)
+    private String salaryVoucherId;
+
 
     @TableField(fill = FieldFill.INSERT)
     @TableLogic(value = "n", delval = "y")
@@ -126,7 +138,7 @@ public class EmployeeSalary extends BaseEntity {
 
     @TableField(exist = false)
     private String employeeNumber;
-    
+
     @TableField(exist = false)
     private String employeeType;
 }

@@ -1,12 +1,12 @@
 /*
  * Copyright [2025] [JinBooks of copyright http://www.jinbooks.com]
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -14,11 +14,25 @@
  * limitations under the License.
  *
  */
- 
+
 
 package com.jinbooks.persistence.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.jinbooks.entity.book.Book;
+import com.jinbooks.entity.book.BookSubject;
+import com.jinbooks.entity.hr.*;
+import com.jinbooks.entity.voucher.dto.GenerateVoucherDto;
+import com.jinbooks.entity.voucher.dto.VoucherChangeDto;
+import com.jinbooks.entity.voucher.dto.VoucherItemChangeDto;
+import com.jinbooks.enums.SalaryVoucherTemplateEnum;
+import com.jinbooks.enums.VoucherStatusEnum;
+import com.jinbooks.persistence.mapper.*;
+import com.jinbooks.persistence.service.VoucherService;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -30,17 +44,12 @@ import com.jinbooks.constants.ConstsUser;
 import com.jinbooks.constants.ContentType;
 import com.jinbooks.entity.Message;
 import com.jinbooks.entity.dto.ListIdsDto;
-import com.jinbooks.entity.hr.EmployeeSalary;
-import com.jinbooks.entity.hr.EmployeeSalarySummary;
-import com.jinbooks.entity.hr.Employee;
 import com.jinbooks.entity.hr.dto.SalaryDetailChangeDto;
 import com.jinbooks.entity.hr.dto.SalaryDetailPageDto;
 import com.jinbooks.entity.hr.dto.SalarySummaryChangeDto;
 import com.jinbooks.entity.PeriodStr;
 import com.jinbooks.entity.hr.vo.TaxDeductionExportVo;
 import com.jinbooks.exception.BusinessException;
-import com.jinbooks.persistence.mapper.EmployeeSalaryMapper;
-import com.jinbooks.persistence.mapper.EmployeeMapper;
 import com.jinbooks.persistence.service.EmployeeSalaryService;
 import com.jinbooks.util.PeriodDateUtils;
 import com.jinbooks.util.DateUtils;
@@ -62,11 +71,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.net.URLEncoder;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * @description:
@@ -82,6 +91,21 @@ public class EmployeeSalaryServiceImpl extends ServiceImpl<EmployeeSalaryMapper,
 
     @Autowired
     private EmployeeMapper employeeMapper;
+
+    @Autowired
+    private BookMapper bookMapper;
+
+    @Autowired
+    private EmployeeSalaryVoucherRuleMapper employeeSalaryVoucherRuleMapper;
+
+    @Autowired
+    private EmployeeSalaryVoucherRuleTemplateMapper employeeSalaryVoucherRuleTemplateMapper;
+
+    @Autowired
+    private BookSubjectMapper bookSubjectMapper;
+
+    @Autowired
+    private VoucherService voucherService;
 
     @Override
     public Message<Page<EmployeeSalary>> pageList(SalaryDetailPageDto dto) {
@@ -277,5 +301,179 @@ public class EmployeeSalaryServiceImpl extends ServiceImpl<EmployeeSalaryMapper,
             }
         }
         return null;
+    }
+
+    @Override
+    @Transactional
+    public Message<String> generateVoucher(GenerateVoucherDto dto) {
+        String bookId = dto.getBookId();
+        Book book = bookMapper.selectById(bookId);
+        Integer voucherType = dto.getVoucherType();
+        EmployeeSalary summary = super.getById(dto.getId());
+
+        if (voucherType == 0 && StringUtils.isNotBlank(summary.getAccrualVoucherId())) {
+            return Message.ok("计提凭证已生成");
+        } else if (voucherType == 1 && StringUtils.isNotBlank(summary.getSalaryVoucherId())) {
+            return Message.ok("发放凭证已生成");
+        } else if (voucherType == 2 && StringUtils.isNotBlank(summary.getAccrualVoucherId())) {
+            return Message.ok("收票（兼职）凭证已生成");
+        } else if (voucherType == 3 && StringUtils.isNotBlank(summary.getSalaryVoucherId())) {
+            return Message.ok("发放（兼职）凭证已生成");
+        }
+
+        Date formattedDate = getFormattedCurrentDate();
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(formattedDate);
+        int year = calendar.get(Calendar.YEAR);
+        int month = calendar.get(Calendar.MONTH) + 1;
+
+        List<EmployeeSalaryVoucherRule> rules = getSalaryVoucherRules(bookId, voucherType);
+        BigDecimal debitAmount = BigDecimal.ZERO;
+        BigDecimal creditAmount = BigDecimal.ZERO;
+
+        List<VoucherItemChangeDto> voucherItems = new ArrayList<>();
+
+        for (EmployeeSalaryVoucherRule rule : rules) {
+            rule.setSummary(generateVoucherItemSummary(rule.getSummary(), year, month));
+
+            String selectedValue = rule.getSelectedValue();
+            SalaryVoucherTemplateEnum matchedEnum = SalaryVoucherTemplateEnum.fromValue(selectedValue);
+            if (matchedEnum == null) {
+                throw new BusinessException(50001, "凭证模板明细数据有误，请联系管理员");
+            }
+
+            BigDecimal amount = switch (matchedEnum) {
+                case COMPANY_COSTS -> summary.getBusinessExpenditureCosts();
+                case SALARY_PAYABLE -> summary.getTotalAmount().add(summary.getTotalSocialInsurance()).add(summary.getProvidentFund()).add(summary.getPersonalTax());
+                case ACTUAL_SALARY -> summary.getTotalAmount();
+                case PERSONAL_INCOME_TAX -> summary.getPersonalTax();
+                case PERSONAL_WITHHOLDING_SOCIAL_SECURITY -> summary.getTotalSocialInsurance();
+                case PERSONAL_WITHHOLDING_PROVIDENT_FUND -> summary.getProvidentFund();
+                case ENTERPRISES_PAY_SOCIAL_INSURANCE -> summary.getBusinessSocialInsurance();
+                case PROVIDENT_FUND_PAID_BY_ENTERPRISES -> summary.getBusinessProvidentFund();
+            };
+
+            boolean isDebit = "1".equals(rule.getDirection());
+            voucherItems.add(createVoucherItemDto(bookId, rule, isDebit, amount));
+
+            if (isDebit) {
+                debitAmount = debitAmount.add(amount);
+            } else {
+                creditAmount = creditAmount.add(amount);
+            }
+        }
+
+        if (debitAmount.compareTo(creditAmount) != 0) {
+            throw new BusinessException(50001, "借贷不平衡，请调整工资凭证模板");
+        }
+
+        VoucherChangeDto voucherChangeDto = createVoucherChangeDto(book, bookId, formattedDate, year, month, debitAmount);
+        voucherChangeDto.setRemark(rules.get(0).getSummary());
+        voucherChangeDto.setItems(voucherItems);
+        voucherChangeDto.setStatus(VoucherStatusEnum.DRAFT.getValue());
+
+        voucherService.save(voucherChangeDto);
+
+        LambdaUpdateWrapper<EmployeeSalary> updateWrapper = new LambdaUpdateWrapper<>();
+        if (voucherType == 0 || voucherType == 2) {
+            updateWrapper.set(EmployeeSalary::getAccrualVoucherId, voucherChangeDto.getId());
+        } else if (voucherType == 1 || voucherType == 3) {
+            updateWrapper.set(EmployeeSalary::getSalaryVoucherId, voucherChangeDto.getId());
+        }
+        updateWrapper.eq(EmployeeSalary::getId, dto.getId());
+        super.update(updateWrapper);
+
+        return Message.ok(voucherChangeDto.getId());
+    }
+
+    public String generateVoucherItemSummary(String summary, int year, int month) {
+        return summary.replace("{yy}", (year + "").substring(2)).replace("{yyyy}", year + "").replace("{mm}", month + "");
+    }
+
+    /**
+     * Gets the current date formatted as yyyy-MM-dd with time set to 00:00:00
+     */
+    private Date getFormattedCurrentDate() {
+        try {
+            Date currentDate = new Date();
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+            String formattedDateStr = dateFormat.format(currentDate);
+            return dateFormat.parse(formattedDateStr);
+        } catch (ParseException e) {
+            log.error("Error formatting date");
+            return new Date();
+        }
+    }
+
+    private List<EmployeeSalaryVoucherRule> getSalaryVoucherRules(String bookId, Integer voucherType) {
+        List<EmployeeSalaryVoucherRuleTemplate> employeeSalaryVoucherRuleTemplates = employeeSalaryVoucherRuleTemplateMapper.selectList(Wrappers.<EmployeeSalaryVoucherRuleTemplate>lambdaQuery()
+                .eq(EmployeeSalaryVoucherRuleTemplate::getBookId, bookId)
+                .eq(EmployeeSalaryVoucherRuleTemplate::getStatus, 1)
+                .eq(EmployeeSalaryVoucherRuleTemplate::getVoucherType, voucherType));
+        if (ObjectUtils.isEmpty(employeeSalaryVoucherRuleTemplates)) {
+            if (Objects.equals(voucherType, 0)) {
+                throw new BusinessException(50001, "缺少计提工资凭证模板，请先在工资凭证规则处生成");
+            } else {
+                throw new BusinessException(50001, "缺少发放工资凭证模板，请先在工资凭证规则处生成");
+            }
+        }
+
+        String id = employeeSalaryVoucherRuleTemplates.get(0).getId();
+        List<EmployeeSalaryVoucherRule> employeeSalaryVoucherRules = employeeSalaryVoucherRuleMapper.selectList(Wrappers.<EmployeeSalaryVoucherRule>lambdaQuery()
+                .eq(EmployeeSalaryVoucherRule::getTemplateId, id));
+
+        if (employeeSalaryVoucherRules.size() < 2) {
+            throw new BusinessException(50001, "请添加模板明细数据");
+        }
+
+        return employeeSalaryVoucherRules;
+    }
+
+    private VoucherItemChangeDto createVoucherItemDto(String bookId,
+                                                      EmployeeSalaryVoucherRule rule, boolean isDebit, BigDecimal amount) {
+
+        LambdaQueryWrapper<BookSubject> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(BookSubject::getBookId, bookId);
+        wrapper.eq(BookSubject::getCode, rule.getSubjectCode());
+        BookSubject bookSubject = bookSubjectMapper.selectOne(wrapper);
+
+        if (Objects.isNull(bookSubject)) {
+            throw new BusinessException(50001, "查询不到该工资凭证规则设置的账套科目，请检查。");
+        }
+
+        VoucherItemChangeDto itemDto = new VoucherItemChangeDto();
+        itemDto.setSummary(rule.getSummary());
+        itemDto.setSubjectId(bookSubject.getId());
+        if (isDebit) {
+            itemDto.setDebitAmount(amount);
+        } else {
+            itemDto.setCreditAmount(amount);
+        }
+        itemDto.setAuxiliary(List.of());
+        itemDto.setSubjectCode(bookSubject.getCode());
+        itemDto.setSubjectName(bookSubject.getCode() + "-" + bookSubject.getName());
+        itemDto.setDetailedAccounts("");
+//        itemDto.setSubjectBalance(BigDecimal.ZERO);
+
+        return itemDto;
+    }
+
+    private VoucherChangeDto createVoucherChangeDto(Book book, String bookId,
+                                                    Date voucherDate, Integer year, Integer month, BigDecimal amount) {
+
+        Integer wordNum = voucherService.getAbleWordNum(bookId, "记", null, null).getData();
+
+        VoucherChangeDto dto = new VoucherChangeDto();
+        dto.setWordHead("记");
+        dto.setWordNum(wordNum);
+        dto.setBookId(bookId);
+        dto.setCompanyName(book.getCompanyName());
+        dto.setVoucherDate(voucherDate);
+        dto.setVoucherYear(year);
+        dto.setVoucherMonth(month);
+        dto.setDebitAmount(amount);
+        dto.setCreditAmount(amount);
+
+        return dto;
     }
 }

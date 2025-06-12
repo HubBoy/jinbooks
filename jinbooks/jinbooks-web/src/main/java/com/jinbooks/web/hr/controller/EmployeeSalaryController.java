@@ -1,12 +1,12 @@
 /*
  * Copyright [2025] [JinBooks of copyright http://www.jinbooks.com]
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  */
- 
+
 
 package com.jinbooks.web.hr.controller;
 
@@ -28,6 +28,7 @@ import com.jinbooks.entity.hr.dto.SalaryDetailChangeDto;
 import com.jinbooks.entity.hr.dto.SalaryDetailPageDto;
 import com.jinbooks.entity.hr.dto.SalarySummaryChangeDto;
 import com.jinbooks.entity.idm.UserInfo;
+import com.jinbooks.entity.voucher.dto.GenerateVoucherDto;
 import com.jinbooks.persistence.service.EmployeeSalaryService;
 import com.jinbooks.validate.AddGroup;
 import com.jinbooks.validate.EditGroup;
@@ -86,7 +87,7 @@ public class EmployeeSalaryController {
     public Message<EmployeeSalary> getById(@PathVariable(name = "id") String id) {
         return Message.ok(employeeSalaryService.getById(id));
     }
-    
+
     @GetMapping("/summary")
     public Message<EmployeeSalarySummary> summary(@ParameterObject SalarySummaryChangeDto dto,@CurrentUser UserInfo currentUser) {
     	if(dto.getBelongDateRange()!= null && dto.getBelongDateRange().length ==2
@@ -96,7 +97,7 @@ public class EmployeeSalaryController {
     	dto.setBookId(currentUser.getBookId());
         return Message.ok(employeeSalaryService.selectSalarySummary(dto));
     }
-    
+
     @GetMapping("/export")
     public Message<String> exportTaxItems(@ParameterObject SalaryDetailPageDto dto,
             HttpServletResponse response, @CurrentUser UserInfo currentUser) {
@@ -107,5 +108,12 @@ public class EmployeeSalaryController {
     @DeleteMapping("/delete")
     public Message<String> delete(@RequestBody ListIdsDto dto) {
         return employeeSalaryService.delete(dto);
+    }
+
+
+    @PostMapping("/generate-voucher")
+    public Message<String> generateVoucher(@Validated @RequestBody GenerateVoucherDto dto, @CurrentUser UserInfo currentUser) {
+        dto.setBookId(currentUser.getBookId());
+        return employeeSalaryService.generateVoucher(dto);
     }
 }

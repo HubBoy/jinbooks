@@ -205,6 +205,36 @@
             {{ formatAmount(scope.row.businessExpenditureCosts) }}
           </template>
         </el-table-column>
+        <el-table-column label="收票凭证" align="center" width="60"
+                         :show-overflow-tooltip="true" fixed="right">
+          <template #default="scope">
+            <el-button v-if="scope.row.employeeType === 'PARTTIME' && (scope.row.accrualVoucherId === null ||scope.row.accrualVoucherId ==='')"
+                       type="text"
+                       @click="generateVoucher(scope.row,2)">
+              生成
+            </el-button>
+            <el-button v-if="scope.row.employeeType === 'PARTTIME' && scope.row.accrualVoucherId !== null &&scope.row.accrualVoucherId !==''"
+                       type="text"
+                       @click="viewVoucher(scope.row.accrualVoucherId)">
+              查看
+            </el-button>
+          </template>
+        </el-table-column>
+        <el-table-column label="发放凭证" align="center" width="60"
+                         :show-overflow-tooltip="true" fixed="right">
+            <template #default="scope">
+              <el-button v-if="scope.row.employeeType === 'PARTTIME' && (scope.row.salaryVoucherId === null ||scope.row.salaryVoucherId ==='')"
+                         type="text"
+                         @click="generateVoucher(scope.row,3)">
+                生成
+              </el-button>
+              <el-button v-if="scope.row.employeeType === 'PARTTIME' && scope.row.salaryVoucherId !== null &&scope.row.salaryVoucherId !==''"
+                         type="text"
+                         @click="viewVoucher(scope.row.salaryVoucherId)">
+                查看
+              </el-button>
+            </template>
+        </el-table-column>
         <!--        <el-table-column label="操作" align="center" fixed="right" width="180">
                   <template #default="scope">
                     <el-button @click="handleUpdate(scope.row)">
@@ -247,23 +277,29 @@
         <edit-form :title="title" :open="openForm"
                    :form-id="id"
                    @dialogOfClosedMethods="dialogOfClosedMethods"></edit-form>-->
+    <!-- 添加或修改凭证记录对话框 -->
+    <el-drawer :title="voucherTitle" v-model="voucherOpen" :close-on-click-modal="false" @close="getList" size="1200px">
+      <template #header>
+        <h4>{{ voucherTitle }}</h4>
+      </template>
+      <voucher-edit v-if="voucherOpen" v-model="voucherForm" :edit="!voucherPreviewMode" :dialog="true" :auto="false"
+                    @submit="submitForm"></voucher-edit>
+    </el-drawer>
   </div>
 </template>
 <script setup lang="ts">
 import {reactive, ref, toRefs, getCurrentInstance} from "vue";
 import {useI18n} from "vue-i18n";
-import {delSalary, exportSalary, fetchPage, salarySummary} from "@/api/system/hr/employee-salary";
-import drawerTable from "./salaryDetail/drawer.vue"
+import {delSalary, exportSalary, fetchPage, salarySummary, generateVoucherSubmit} from "@/api/system/hr/employee-salary";
 import {ElForm} from "element-plus";
-import editForm from "./salaryDetail/form-drawer.vue"
 import modal from "@/plugins/modal";
 import {formatAmount} from "@/utils";
-import {addEmployee, updateEmployee} from "@/api/system/hr/employee";
-import {saveSummary} from "@/api/system/hr/employee-summary";
 import {useRouter} from "vue-router";
 import {h} from 'vue'
 import type {VNode} from 'vue'
 import booksSetStore from "@/store/modules/bookStore";
+import * as voucherApis from "@/api/system/voucher/voucher";
+import voucherEdit from "@/views/voucher/voucher-edit.vue";
 
 const router: any = useRouter();
 const {t} = useI18n()
@@ -286,8 +322,13 @@ const data: any = reactive({
     label: [
       {required: true, message: "请输入名称", trigger: "blur"},
     ],
-  }
+  },
+  voucherForm: {},
+
 });
+const voucherOpen = ref(false);
+const voucherPreviewMode = ref(false);
+const voucherTitle = ref("");
 const dataList = ref([]);
 const open = ref(false);
 const openForm = ref(false);
@@ -300,7 +341,7 @@ const selectionlist: any = ref<any>([]);
 const editFlag: any = ref(false);
 const editTitle: any = ref('');
 const formRef = ref<InstanceType<typeof ElForm> | null>(null);
-const {queryParams, form, rules} = toRefs(data);
+const {queryParams, form, rules, voucherForm} = toRefs(data);
 let accOptions: any = ref([]);
 let tableSummary: any = ref([]);
 const shortcuts = [
@@ -529,6 +570,30 @@ function submitForm() {
     URL.revokeObjectURL(a.href);
     a.remove();
   })
+}
+
+function generateVoucher(row: any, voucherType: number) {
+  generateVoucherSubmit({id: row.id, voucherType: voucherType}).then((res: any) => {
+    if (res.code === 0) {
+      getList();
+      modal.msgSuccess("操作成功");
+      viewVoucher(res.data)
+    }
+  });
+}
+
+/** 查看操作 */
+function viewVoucher(voucherId: any) {
+  voucherApis.getOneVoucher(voucherId).then((response: any) => {
+    response.data.items.forEach((t: any) => {
+      t.subjectCode = t.subjectName.split("-")[0]
+      // t.detailedSubjectCode = t.detailedAccounts.split("-")[0]
+    })
+    voucherForm.value = response.data
+    voucherOpen.value = true;
+    voucherPreviewMode.value = false;
+    voucherTitle.value = "凭证记录";
+  });
 }
 
 getList()
