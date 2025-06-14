@@ -471,10 +471,9 @@ const cascaderSubjectProps = {
   filterable: true,
   filterMethod: (item: any, keyword: any) => {
     if (!keyword) return true
-    return item.data.name.toLowerCase().includes(keyword.toLowerCase())
-        || item.data.code.toLowerCase().includes(keyword.toLowerCase())
-        || (item.data.pinyinCode)?.toLowerCase().includes(keyword.toLowerCase())
-        || (item.data.pinyinDisplayCode)?.toLowerCase().includes(keyword.toLowerCase())
+    return item.text.toLowerCase().indexOf(keyword.toLowerCase()) > -1
+        || item.value.indexOf(keyword) > -1
+        || (item.data.pinyinDisplayCode)?.toLowerCase().indexOf(keyword.toLowerCase()) > -1
   }
 }
 // 创建一个响应式的对象来存储 refs
