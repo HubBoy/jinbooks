@@ -96,6 +96,7 @@ public class SettlementCarryServiceImpl extends ServiceImpl<SettlementMapper, Se
 
     public Message<Page<SettlementCarryforwardVo>> fetchCarry(VoucherTemplatePageDto dto) {
         dto.setCategory(1);//期末处理模板
+        dto.setYearPeriod(configSysService.getCurrentTerm(dto.getBookId()));
         Page<SettlementCarryforwardVo> page = settlementCarryforwardMapper.pageList(dto.build(), dto);
         if (page.getTotal() <= 0) {
             Book book = bookMapper.selectById(dto.getRelatedId());

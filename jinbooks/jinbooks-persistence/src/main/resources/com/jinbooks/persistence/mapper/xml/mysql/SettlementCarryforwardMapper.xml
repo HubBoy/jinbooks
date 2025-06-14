@@ -6,10 +6,10 @@
         select jvt.*,jsc.voucher_id
         from jbx_voucher_template jvt
         left join jbx_settlement_carryforward jsc
-        on jvt.id = jsc.voucher_template_id and jsc.deleted = 'n'
-        <if test="dto.yearPeriod != null ">
-            and jsc.year_period = #{dto.yearPeriod}
-        </if>
+        on jvt.id = jsc.voucher_template_id 
+          and jsc.year_period = #{dto.yearPeriod}
+          and jsc.book_id = #{dto.bookId}
+          and jsc.deleted = 'n'
         where jvt.deleted = 'n'
         <if test="dto.relatedId != null and dto.relatedId != ''">
             and jvt.related_Id = #{dto.relatedId}

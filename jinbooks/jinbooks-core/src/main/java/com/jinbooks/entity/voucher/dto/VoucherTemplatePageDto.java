@@ -51,5 +51,9 @@ public class VoucherTemplatePageDto extends PageQuery {
     String name;
     
     int category;
+    
+    String yearPeriod;
+    
+    String bookId;
 
 }

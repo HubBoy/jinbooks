@@ -52,6 +52,7 @@ public class SettlementCarryController {
     public Message<Page<SettlementCarryforwardVo>> fetchCarry(@ParameterObject VoucherTemplatePageDto dto,@CurrentUser UserInfo userInfo) {
         logger.debug("fetch {}",dto);
         dto.setRelatedId(userInfo.getBookId());
+        dto.setBookId(userInfo.getBookId());
         return settlementCarryService.fetchCarry(dto);
     }
     

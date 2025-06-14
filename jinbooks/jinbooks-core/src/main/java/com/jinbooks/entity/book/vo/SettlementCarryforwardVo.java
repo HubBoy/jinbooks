@@ -32,5 +32,5 @@ public class SettlementCarryforwardVo extends VoucherTemplate{
 
 	String voucherId;
 	
-	Integer yearPeriod;
+	
 }
