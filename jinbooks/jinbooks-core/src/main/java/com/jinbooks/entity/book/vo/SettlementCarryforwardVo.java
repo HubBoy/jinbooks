@@ -31,4 +31,6 @@ public class SettlementCarryforwardVo extends VoucherTemplate{
 	private static final long serialVersionUID = 4969126049394752855L;
 
 	String voucherId;
+	
+	Integer yearPeriod;
 }

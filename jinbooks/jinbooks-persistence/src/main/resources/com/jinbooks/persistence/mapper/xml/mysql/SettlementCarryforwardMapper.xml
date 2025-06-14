@@ -7,6 +7,9 @@
         from jbx_voucher_template jvt
         left join jbx_settlement_carryforward jsc
         on jvt.id = jsc.voucher_template_id and jsc.deleted = 'n'
+        <if test="dto.yearPeriod != null ">
+            and jsc.year_period = #{dto.yearPeriod}
+        </if>
         where jvt.deleted = 'n'
         <if test="dto.relatedId != null and dto.relatedId != ''">
             and jvt.related_Id = #{dto.relatedId}
