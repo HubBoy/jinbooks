@@ -48,8 +48,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.time.YearMonth;
 import java.util.*;
 
@@ -150,11 +148,9 @@ public class EmployeeSalarySummaryServiceImpl extends ServiceImpl<EmployeeSalary
             return Message.ok("发放（兼职）凭证已生成");
         }
 
-        Date formattedDate = getFormattedCurrentDate();
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(formattedDate);
-        int year = calendar.get(Calendar.YEAR);
-        int month = calendar.get(Calendar.MONTH) + 1;
+        YearMonth currentTerm = YearMonth.parse(configSysService.getCurrentTerm(dto.getBookId()));
+        
+        Date currentTermLastDate = configSysService.getCurrentTermLastDate(dto.getBookId());
 
         List<EmployeeSalaryVoucherRule> rules = getSalaryVoucherRules(bookId, voucherType);
         BigDecimal debitAmount = BigDecimal.ZERO;
@@ -163,7 +159,7 @@ public class EmployeeSalarySummaryServiceImpl extends ServiceImpl<EmployeeSalary
         List<VoucherItemChangeDto> voucherItems = new ArrayList<>();
 
         for (EmployeeSalaryVoucherRule rule : rules) {
-            rule.setSummary(generateVoucherItemSummary(rule.getSummary(), year, month));
+            rule.setSummary(generateVoucherItemSummary(rule.getSummary(), currentTerm.getYear(), currentTerm.getMonthValue()));
 
             String selectedValue = rule.getSelectedValue();
             SalaryVoucherTemplateEnum matchedEnum = SalaryVoucherTemplateEnum.fromValue(selectedValue);
@@ -196,7 +192,7 @@ public class EmployeeSalarySummaryServiceImpl extends ServiceImpl<EmployeeSalary
             throw new BusinessException(50001, "借贷不平衡，请调整工资凭证模板");
         }
 
-        VoucherChangeDto voucherChangeDto = createVoucherChangeDto(book, bookId, formattedDate, year, month, debitAmount);
+        VoucherChangeDto voucherChangeDto = createVoucherChangeDto(book, bookId, currentTermLastDate, currentTerm.getYear(), currentTerm.getMonthValue(), debitAmount);
         voucherChangeDto.setRemark(rules.get(0).getSummary());
         voucherChangeDto.setItems(voucherItems);
         voucherChangeDto.setStatus(VoucherStatusEnum.DRAFT.getValue());
@@ -218,21 +214,6 @@ public class EmployeeSalarySummaryServiceImpl extends ServiceImpl<EmployeeSalary
 
     public String generateVoucherItemSummary(String summary, int year, int month) {
         return summary.replace("{yy}", (year + "").substring(2)).replace("{yyyy}", year + "").replace("{mm}", month + "");
-    }
-
-    /**
-     * Gets the current date formatted as yyyy-MM-dd with time set to 00:00:00
-     */
-    private Date getFormattedCurrentDate() {
-        try {
-            Date currentDate = new Date();
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-            String formattedDateStr = dateFormat.format(currentDate);
-            return dateFormat.parse(formattedDateStr);
-        } catch (ParseException e) {
-            log.error("Error formatting date");
-            return new Date();
-        }
     }
 
     /**
