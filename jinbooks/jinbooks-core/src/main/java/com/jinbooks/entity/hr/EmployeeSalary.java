@@ -79,6 +79,10 @@ public class EmployeeSalary extends BaseEntity {
 
     private BigDecimal personalTax;
 
+    /**
+     * 应发工资 = 工资+应增-应扣
+     */
+    private BigDecimal payAmount;
     private BigDecimal totalAmount;
 
     private String bookId;

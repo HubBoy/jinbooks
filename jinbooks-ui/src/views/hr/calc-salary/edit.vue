@@ -49,14 +49,14 @@
             </el-form-item>
           </el-col>
         </el-row>
-        <h4 class="section-title" style="color: dodgerblue">应发金额 {{(form.payBasic +
+        <h4 class="section-title" style="color: dodgerblue">工资金额 {{(form.payBasic +
             form.payPost +
             form.payMerit +
             form.laborFee +
             form.bonus +
             form.overtime +
             form.allowance +
-            form.backPay).toFixed(2)}}</h4>
+            form.backPay).toFixed(2)}} 应发金额 {{(form.payAmount||0.00).toFixed(2)}}</h4>
         <el-row :gutter="20">
           <el-col :span="span" v-if="form.employeeType !== 'PARTTIME'">
             <el-form-item label="基本工资">

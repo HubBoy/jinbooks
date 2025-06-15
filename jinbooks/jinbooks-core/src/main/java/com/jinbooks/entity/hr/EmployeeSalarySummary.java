@@ -83,7 +83,11 @@ public class EmployeeSalarySummary extends BaseEntity {
 
     /*个税*/
     private BigDecimal personalTax;
-
+    /**
+     * 应发工资 = 工资+应增-应扣
+     */
+    private BigDecimal payAmount;
+    
     /*实发工资*/
     private BigDecimal totalAmount;
 

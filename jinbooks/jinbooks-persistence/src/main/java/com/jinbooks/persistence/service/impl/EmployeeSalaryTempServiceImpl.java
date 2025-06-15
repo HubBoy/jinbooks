@@ -461,6 +461,18 @@ public class EmployeeSalaryTempServiceImpl extends ServiceImpl<EmployeeSalaryTem
 		                .add(seriousMedicalBusiness);
 		        employeeSalary.setBusinessSocialInsurance(socialInsuranceBusiness);
 		        employeeSalary.setBusinessProvidentFund(providentFundSupBusinessFee);
+		        //应发工资 = 工资+应增-应扣
+		        employeeSalary.setPayAmount(
+		        		employee.getPayBasic()
+		                .add(BigDecimalUtils.safeAdd(employee.getPayPost()))
+		                .add(BigDecimalUtils.safeAdd(employee.getPayMerit()))
+		                .add(BigDecimalUtils.safeAdd(employeeSalary.getBonus()))
+		                .add(BigDecimalUtils.safeAdd(employeeSalary.getOvertime()))
+		                .add(BigDecimalUtils.safeAdd(employeeSalary.getAllowance()))
+		                .add(BigDecimalUtils.safeAdd(employeeSalary.getBackPay()))
+		                .subtract(BigDecimalUtils.safeAdd(employeeSalary.getAttendance()))
+		                .subtract(BigDecimalUtils.safeAdd(employeeSalary.getOtherDeductions()))
+		        		);
 		        //计算总工资(不含税)
 		        BigDecimal totalAmount = employee.getPayBasic()
 		                .add(BigDecimalUtils.safeAdd(employee.getPayPost()))
@@ -501,7 +513,16 @@ public class EmployeeSalaryTempServiceImpl extends ServiceImpl<EmployeeSalaryTem
                 BigDecimal taxableWages = laborFee.multiply(new BigDecimal("0.8"));
                 employeeSalary.setTaxableWages(taxableWages);
             }
-
+            	
+            employeeSalary.setPayAmount(
+            		laborFee
+	                .add(BigDecimalUtils.safeAdd(employeeSalary.getBonus()))
+	                .add(BigDecimalUtils.safeAdd(employeeSalary.getOvertime()))
+	                .add(BigDecimalUtils.safeAdd(employeeSalary.getAllowance()))
+	                .add(BigDecimalUtils.safeAdd(employeeSalary.getBackPay()))
+	                .subtract(BigDecimalUtils.safeAdd(employeeSalary.getAttendance()))
+	                .subtract(BigDecimalUtils.safeAdd(employeeSalary.getOtherDeductions()))
+	        		);
         	 employeeSalary.setTotalAmount(laborFee);
         }
     }

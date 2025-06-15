@@ -63,6 +63,8 @@ public class SalaryDetailChangeDto {
 
     private BigDecimal personalTax;
 
+    private BigDecimal payAmount;
+    
     private BigDecimal totalAmount;
 
     private String bookId;

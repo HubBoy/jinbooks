@@ -172,6 +172,12 @@
             {{ formatAmount(scope.row.taxDeduction) }}
           </template>
         </el-table-column>
+         <el-table-column prop="payAmount" label="应发工资" align="right" width="110"
+                         :show-overflow-tooltip="true">
+          <template #default="scope">
+            {{ formatAmount(scope.row.payAmount) }}
+          </template>
+        </el-table-column>
         <el-table-column prop="taxableWages" label="应税工资" align="right" width="110"
                          :show-overflow-tooltip="true">
           <template #default="scope">

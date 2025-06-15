@@ -79,6 +79,14 @@ public class EmployeeSalaryTemp extends BaseEntity {
 
     private BigDecimal personalTax;
 
+    /**
+     * 应发工资 = 工资+应增-应扣
+     */
+    private BigDecimal payAmount;
+    
+    /**
+     * 实发合计
+     */
     private BigDecimal totalAmount;
 
     private String bookId;
