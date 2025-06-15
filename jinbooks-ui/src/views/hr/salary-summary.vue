@@ -403,6 +403,8 @@ const getSummaries = () => {
     }, [formatAmount(tableSummary.personalTax),]);
     sums[sumsIndex++] = tableSummary.businessSocialInsurance;
     sums[sumsIndex++] = tableSummary.businessProvidentFund;
+    sums[sumsIndex++] = formatAmount(tableSummary.payAmount);
+    sums[sumsIndex++] = formatAmount(tableSummary.taxableWages);
     sums[sumsIndex++] = formatAmount(tableSummary.totalAmount);
     sums[sumsIndex++] = h('div', {
       style: {

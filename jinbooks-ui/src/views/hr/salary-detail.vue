@@ -447,9 +447,10 @@ const getSummaries = () => {
     sums[18] = tableSummary.businessSocialInsurance;
     sums[19] = tableSummary.businessProvidentFund;
     sums[20] = tableSummary.taxDeduction;
-    sums[21] = tableSummary.taxableWages;
-    sums[22] = formatAmount(tableSummary.totalAmount);
-    sums[23] = h('div', {
+    sums[21] = tableSummary.payAmount;
+    sums[22] = tableSummary.taxableWages;
+    sums[23] = formatAmount(tableSummary.totalAmount);
+    sums[24] = h('div', {
       style: {
         textDecoration: 'underline',
         fontWeight: "bold"
