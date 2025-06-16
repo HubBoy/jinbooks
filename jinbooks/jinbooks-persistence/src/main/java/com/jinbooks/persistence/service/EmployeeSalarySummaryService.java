@@ -26,7 +26,6 @@ import com.jinbooks.entity.Message;
 import com.jinbooks.entity.hr.EmployeeSalarySummary;
 import com.jinbooks.entity.hr.dto.SalaryDetailPageDto;
 import com.jinbooks.entity.hr.dto.SalarySummaryChangeDto;
-import com.jinbooks.entity.voucher.dto.GenerateVoucherDto;
 
 public interface EmployeeSalarySummaryService extends IService<EmployeeSalarySummary> {
 
@@ -34,7 +33,5 @@ public interface EmployeeSalarySummaryService extends IService<EmployeeSalarySum
 
     Message<Page<EmployeeSalarySummary>> pageList(SalaryDetailPageDto dto);
 
-    Message<String> generateVoucher(GenerateVoucherDto dto);
-    
     EmployeeSalarySummary selectSalarySummary(@Param("Dto") SalarySummaryChangeDto dto);
 }

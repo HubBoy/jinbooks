@@ -25,7 +25,6 @@ import com.jinbooks.entity.hr.EmployeeSalarySummary;
 import com.jinbooks.entity.hr.dto.SalaryDetailPageDto;
 import com.jinbooks.entity.hr.dto.SalarySummaryChangeDto;
 import com.jinbooks.entity.idm.UserInfo;
-import com.jinbooks.entity.voucher.dto.GenerateVoucherDto;
 import com.jinbooks.persistence.service.EmployeeSalarySummaryService;
 import com.jinbooks.validate.AddGroup;
 import lombok.RequiredArgsConstructor;
@@ -79,9 +78,4 @@ public class EmployeeSalarySummaryController {
         return Message.ok(employeeSalarySummaryService.selectSalarySummary(dto));
     }
 
-    @PostMapping("/generate-voucher")
-    public Message<String> generateVoucher(@Validated @RequestBody GenerateVoucherDto dto, @CurrentUser UserInfo currentUser) {
-        dto.setBookId(currentUser.getBookId());
-        return employeeSalarySummaryService.generateVoucher(dto);
-    }
 }

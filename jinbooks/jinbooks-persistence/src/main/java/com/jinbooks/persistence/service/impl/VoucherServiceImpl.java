@@ -29,7 +29,6 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.jinbooks.entity.Message;
 import com.jinbooks.entity.book.Book;
 import com.jinbooks.entity.book.BookSubject;
-import com.jinbooks.entity.hr.EmployeeSalarySummary;
 import com.jinbooks.entity.idm.UserInfo;
 import com.jinbooks.entity.voucher.*;
 import com.jinbooks.entity.voucher.dto.*;
@@ -704,23 +703,6 @@ public class VoucherServiceImpl extends ServiceImpl<VoucherMapper, Voucher> impl
                     Wrappers.<VoucherItemCashFlow>lambdaQuery().in(VoucherItemCashFlow::getVoucherItemId, voucherItemIds)
             );
         }
-
-        //删除工资凭证关联
-        //计提
-        List<EmployeeSalarySummary> employeeSalarySummariesAccrual = employeeSalarySummaryMapper.selectList(Wrappers.<EmployeeSalarySummary>lambdaQuery()
-                .in(EmployeeSalarySummary::getAccrualVoucherId, ids));
-        if (ObjectUtils.isNotEmpty(employeeSalarySummariesAccrual)) {
-            employeeSalarySummariesAccrual.forEach(item -> item.setAccrualVoucherId(null));
-        }
-        employeeSalarySummaryMapper.updateById(employeeSalarySummariesAccrual);
-
-        //发放
-        List<EmployeeSalarySummary> employeeSalarySummaries = employeeSalarySummaryMapper.selectList(Wrappers.<EmployeeSalarySummary>lambdaQuery()
-                .in(EmployeeSalarySummary::getSalaryVoucherId, ids));
-        if (ObjectUtils.isNotEmpty(employeeSalarySummaries)) {
-            employeeSalarySummaries.forEach(item -> item.setSalaryVoucherId(null));
-        }
-        employeeSalarySummaryMapper.updateById(employeeSalarySummaries);
 
         // 删除凭证项
         voucherItemMapper.delete(new LambdaUpdateWrapper<VoucherItem>().in(VoucherItem::getVoucherId, ids));

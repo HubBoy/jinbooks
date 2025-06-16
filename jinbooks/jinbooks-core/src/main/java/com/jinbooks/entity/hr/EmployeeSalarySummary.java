@@ -113,15 +113,5 @@ public class EmployeeSalarySummary extends BaseEntity {
     private String deleted;
 
     private String description;
-    /**
-     * 计提工资凭证编码
-     */
-    @TableField(updateStrategy = FieldStrategy.ALWAYS)
-    private String accrualVoucherId;
 
-    /**
-     * 发放工资凭证编码
-     */
-    @TableField(updateStrategy = FieldStrategy.ALWAYS)
-    private String salaryVoucherId;
 }
