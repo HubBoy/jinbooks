@@ -40,7 +40,7 @@
                 </el-button>
               </template>
             </el-table-column>
-            <el-table-column label="操作" align="center" header-align="center" width="160" prop="sortIndex">
+            <el-table-column label="模板" align="center" header-align="center" width="160" prop="sortIndex">
               <template #default="scope">
                 <el-tooltip content="新增/编辑">
                   <el-button type="primary" link @click="handleAdd(scope.row)" icon="Plus"></el-button>
@@ -62,7 +62,7 @@
           <el-dialog v-model="dialog.visible" :close-on-click-modal="false" width="800"
                      style="margin-top: 30vh !important;">
             <template #default>
-              <el-form :model="form" :rules="rules" ref="voucherTemplateRef" label-width="68px"
+              <el-form :model="form" :items="items" ref="voucherTemplateRef" label-width="68px"
                        inline-message>
                 <el-form-item label="ID" prop="id" style="display:none">
                   <el-input style="width: 300px" v-model="form.id" placeholder="请输入id"/>
@@ -157,7 +157,7 @@
                     </template>
                   </el-table-column>
                 </el-table>
-                <el-button icon="Plus" style="width: 100%" @click="form.items.push({})"></el-button>
+                <el-button icon="Plus" style="width: 100%" @click="form.items.push({direction:1})"></el-button>
               </el-form>
             </template>
             <template #footer>
@@ -249,7 +249,7 @@ const data = reactive({
     bookId: currBookStore.bookId
   },
   voucherForm: {},
-  rules: {
+  items: {
     itemCode: [
       {required: true, message: '编码不能为空', trigger: 'blur'}
     ],
@@ -259,7 +259,7 @@ const data = reactive({
   }
 });
 
-const {queryParams, form, rules, voucherForm} = toRefs(data);
+const {queryParams, form, items, voucherForm} = toRefs(data);
 
 /** 查询列表 */
 function getList() {
@@ -373,8 +373,10 @@ const submitForm = () => {
   voucherTemplateRef.value?.validate(async (valid: boolean) => {
     if (valid) {
       form.value.items = form.value.items.filter((item: any) => {
+        console.log("subjectCode "+item.subjectCode+ " summary " + item.summary +" direction "+ item.direction);
         return item.subjectCode && item.summary && item.direction
       })
+
       form.value.relatedId = form.value.relatedId || queryParams.value.bookId;
 
       buttonLoading.value = true;

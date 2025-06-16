@@ -29,6 +29,7 @@ import com.jinbooks.entity.book.BookSubject;
 import com.jinbooks.entity.book.Settlement;
 import com.jinbooks.entity.book.SettlementCarryforward;
 import com.jinbooks.entity.book.vo.SettlementCarryforwardVo;
+import com.jinbooks.entity.hr.EmployeeSalarySummary;
 import com.jinbooks.entity.statement.StatementSubjectBalance;
 import com.jinbooks.entity.voucher.VoucherTemplate;
 import com.jinbooks.entity.voucher.VoucherTemplateItem;
@@ -38,6 +39,7 @@ import com.jinbooks.entity.voucher.dto.VoucherItemChangeDto;
 import com.jinbooks.entity.voucher.dto.VoucherTemplatePageDto;
 import com.jinbooks.enums.VoucherStatusEnum;
 import com.jinbooks.persistence.mapper.BookMapper;
+import com.jinbooks.persistence.mapper.EmployeeSalarySummaryMapper;
 import com.jinbooks.persistence.mapper.SettlementCarryforwardMapper;
 import com.jinbooks.persistence.mapper.SettlementMapper;
 import com.jinbooks.persistence.mapper.VoucherTemplateItemMapper;
@@ -93,6 +95,9 @@ public class SettlementCarryServiceImpl extends ServiceImpl<SettlementMapper, Se
 
     @Autowired
     StatementSubjectBalanceService statementSubjectBalanceService;
+    
+    @Autowired
+    EmployeeSalarySummaryMapper employeeSalarySummaryMapper;
 
     public Message<Page<SettlementCarryforwardVo>> fetchCarry(VoucherTemplatePageDto dto) {
         dto.setCategory(1);//期末处理模板
@@ -197,7 +202,23 @@ public class SettlementCarryServiceImpl extends ServiceImpl<SettlementMapper, Se
                     return Message.failed("非年末，无需结转本年利润");
                 }
             }
-        } else {
+        }else if (voucherTemplate.getCode().startsWith("jt_gz")||voucherTemplate.getCode().startsWith("jt_shebao")) {
+        	LambdaQueryWrapper<EmployeeSalarySummary> salaryWrapper = new LambdaQueryWrapper<>();
+        	salaryWrapper.eq(EmployeeSalarySummary::getBelongDate, currentTerm);
+        	salaryWrapper.eq(EmployeeSalarySummary::getBookId, bookId);
+        	salaryWrapper.eq(EmployeeSalarySummary::getLabel, "salary");
+        	salaryWrapper.eq(EmployeeSalarySummary::getDeleted, "n");
+        	EmployeeSalarySummary summary = employeeSalarySummaryMapper.selectOne(salaryWrapper);
+        	 if (voucherTemplate.getCode().startsWith("jt_gz")){
+        		 for (VoucherTemplateItem item : items) {
+                     voucherItems.add(createVoucherItemDto(bookId, item, summary.getPayAmount()));
+                 }
+        	 }else if (voucherTemplate.getCode().startsWith("jt_shebao")){
+        		 for (VoucherTemplateItem item : items) {
+                     voucherItems.add(createVoucherItemDto(bookId, item, summary.getBusinessSocialInsurance()));
+                 }
+        	 }
+        }else {
             for (VoucherTemplateItem item : items) {
                 voucherItems.add(createVoucherItemDto(bookId, item, BigDecimal.ZERO));
             }
