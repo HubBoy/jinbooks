@@ -19,10 +19,8 @@
 package com.jinbooks.persistence.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
-import cn.hutool.core.bean.copier.CopyOptions;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.incrementer.IdentifierGenerator;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.jinbooks.entity.Message;
@@ -31,9 +29,6 @@ import com.jinbooks.entity.book.dto.BookChangeDto;
 import com.jinbooks.entity.book.dto.BookPageDto;
 import com.jinbooks.entity.book.vo.BookVo;
 import com.jinbooks.entity.dto.ListIdsDto;
-import com.jinbooks.entity.hr.EmployeeSalarySummary;
-import com.jinbooks.entity.hr.EmployeeSalaryVoucherRule;
-import com.jinbooks.entity.hr.EmployeeSalaryVoucherRuleTemplate;
 import com.jinbooks.enums.BookBusinessExceptionEnum;
 import com.jinbooks.exception.BusinessException;
 import com.jinbooks.persistence.mapper.BookMapper;
@@ -45,7 +40,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * @description:
@@ -85,12 +79,6 @@ public class BookServiceImpl extends ServiceImpl<BookMapper, Book> implements Bo
     @Autowired
     StandardSubjectCashFlowService standardSubjectCashFlowService;
 
-    @Autowired
-    EmployeeSalaryVoucherRuleTemplateService employeeSalaryVoucherRuleTemplateService;
-
-    @Autowired
-    EmployeeSalaryVoucherRuleService employeeSalaryVoucherRuleService;
-
     @Override
     public Message<Page<Book>> pageList(BookPageDto dto) {
         Page<Book> page = bookMapper.pageList(dto.build(), dto);
@@ -124,9 +112,6 @@ public class BookServiceImpl extends ServiceImpl<BookMapper, Book> implements Bo
 
         //新增默认科目和现金流量的关系
         standardSubjectCashFlowService.saveTemplateRelationships(dto.getId());
-
-        //新增默认工资凭证规则模板
-        setSalaryVoucherRule(dto.getId());
 
         //新增账套
         Book newBook = new Book();
@@ -217,74 +202,6 @@ public class BookServiceImpl extends ServiceImpl<BookMapper, Book> implements Bo
     @Override
     public List<BookVo> listBooks(String userId) {
         return bookMapper.listBooks(userId);
-    }
-
-    private void setSalaryVoucherRule(String bookId) {
-        // 1. 查询内置的模板数据（bookId为null的数据）
-        List<EmployeeSalaryVoucherRuleTemplate> builtInTemplates = employeeSalaryVoucherRuleTemplateService.list(
-                Wrappers.<EmployeeSalaryVoucherRuleTemplate>lambdaQuery()
-                        .isNull(EmployeeSalaryVoucherRuleTemplate::getBookId)
-        );
-
-        if (ObjectUtils.isEmpty(builtInTemplates)) {
-            return; // 如果没有内置模板数据，直接返回
-        }
-
-        // 2. 获取内置模板的ID列表
-        List<String> builtInTemplateIds = builtInTemplates.stream()
-                .map(EmployeeSalaryVoucherRuleTemplate::getId)
-                .toList();
-
-        // 3. 查询对应的内置规则数据
-        List<EmployeeSalaryVoucherRule> builtInRules = employeeSalaryVoucherRuleService.list(
-                Wrappers.<EmployeeSalaryVoucherRule>lambdaQuery()
-                        .in(EmployeeSalaryVoucherRule::getTemplateId, builtInTemplateIds)
-        );
-
-        // 4. 复制模板数据并设置新的bookId，同时建立映射关系
-        CopyOptions copyOptions = new CopyOptions();
-        copyOptions.setIgnoreProperties("id", "createdBy", "createdDate", "modifiedBy", "modifiedDate");
-
-        Map<String, String> templateIdMapping = new HashMap<>();
-
-        // 逐个处理模板数据，确保映射关系正确
-        for (EmployeeSalaryVoucherRuleTemplate builtInTemplate : builtInTemplates) {
-            String oldTemplateId = builtInTemplate.getId();
-
-            // 复制模板数据
-            EmployeeSalaryVoucherRuleTemplate newTemplate = BeanUtil.copyProperties(
-                    builtInTemplate,
-                    EmployeeSalaryVoucherRuleTemplate.class,
-                    "id", "createdBy", "createdDate", "modifiedBy", "modifiedDate", "deleted"
-            );
-            newTemplate.setBookId(bookId);
-
-            // 保存单个模板以获取新生成的ID
-            employeeSalaryVoucherRuleTemplateService.save(newTemplate);
-
-            // 建立新旧ID映射关系
-            String newTemplateId = newTemplate.getId();
-            templateIdMapping.put(oldTemplateId, newTemplateId);
-        }
-
-        // 5. 复制规则数据并设置新的templateId
-        if (ObjectUtils.isNotEmpty(builtInRules)) {
-            List<EmployeeSalaryVoucherRule> newRules = BeanUtil.copyToList(
-                    builtInRules,
-                    EmployeeSalaryVoucherRule.class,
-                    copyOptions
-            );
-
-            // 更新规则数据的templateId为新模板的ID
-            newRules.forEach(rule -> {
-                String oldTemplateId = rule.getTemplateId();
-                String newTemplateId = templateIdMapping.get(oldTemplateId);
-                rule.setTemplateId(newTemplateId);
-            });
-
-            // 6. 批量保存新的规则数据
-            employeeSalaryVoucherRuleService.saveBatch(newRules);
-        }
     }
 
 }

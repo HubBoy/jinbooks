@@ -19,26 +19,15 @@
 package com.jinbooks.persistence.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.jinbooks.entity.Message;
-import com.jinbooks.entity.book.Book;
-import com.jinbooks.entity.book.BookSubject;
 import com.jinbooks.entity.hr.EmployeeSalarySummary;
-import com.jinbooks.entity.hr.EmployeeSalaryVoucherRule;
-import com.jinbooks.entity.hr.EmployeeSalaryVoucherRuleTemplate;
 import com.jinbooks.entity.hr.dto.SalaryDetailPageDto;
 import com.jinbooks.entity.hr.dto.SalarySummaryChangeDto;
-import com.jinbooks.entity.voucher.dto.GenerateVoucherDto;
-import com.jinbooks.entity.voucher.dto.VoucherChangeDto;
-import com.jinbooks.entity.voucher.dto.VoucherItemChangeDto;
-import com.jinbooks.enums.SalaryVoucherTemplateEnum;
-import com.jinbooks.enums.VoucherStatusEnum;
-import com.jinbooks.exception.BusinessException;
 import com.jinbooks.persistence.mapper.*;
 import com.jinbooks.persistence.service.ConfigSysService;
 import com.jinbooks.persistence.service.EmployeeSalarySummaryService;
@@ -47,9 +36,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.time.YearMonth;
-import java.util.*;
 
 /**
  * @description:
@@ -63,12 +50,6 @@ public class EmployeeSalarySummaryServiceImpl extends ServiceImpl<EmployeeSalary
 
     @Autowired
     EmployeeSalaryMapper employeeSalaryMapper;
-
-    @Autowired
-    EmployeeSalaryVoucherRuleMapper employeeSalaryVoucherRuleMapper;
-
-    @Autowired
-    EmployeeSalaryVoucherRuleTemplateMapper employeeSalaryVoucherRuleTemplateMapper;
 
     @Autowired
     VoucherService voucherService;
