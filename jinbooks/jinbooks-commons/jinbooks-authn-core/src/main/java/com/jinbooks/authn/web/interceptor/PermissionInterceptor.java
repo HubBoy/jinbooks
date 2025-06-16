@@ -86,14 +86,6 @@ public class PermissionInterceptor  implements AsyncHandlerInterceptor  {
 		    return false;
 		}
 		
-		//管理端必须使用管理员登录,非管理员用户直接注销
-		if (this.mgmt && !principal.isRoleAdministrators()) {
-		    logger.debug("Not ADMINISTRATORS Authentication .");
-		    RequestDispatcher dispatcher = request.getRequestDispatcher("/auth/entrypoint");
-		    dispatcher.forward(request, response);
-		    return false;
-		}
-		
 		return true;
 	}
 
