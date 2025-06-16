@@ -9,8 +9,6 @@
           @tab-click="handleClick"
       >
         <el-tab-pane label="期末处理" name="carry-forward">
-          <span>当前账期：{{ currentTerm }}</span>
-
           <el-table v-loading="loading" :data="vouchertemplateList" border
                     :tree-props="{ children: 'children', hasChildren: 'hasChildren' }"
                     row-key="id" default-expand-all
