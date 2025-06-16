@@ -48,4 +48,6 @@ public interface EmployeeSalaryService extends IService<EmployeeSalary> {
     Message<String> exportTaxItems(SalaryDetailPageDto dto, HttpServletResponse response);
 
     Message<String> generateVoucher(GenerateVoucherDto dto);
+    
+    Message<String> deleteVoucher(GenerateVoucherDto dto);
 }

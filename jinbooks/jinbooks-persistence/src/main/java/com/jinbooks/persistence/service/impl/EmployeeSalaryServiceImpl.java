@@ -440,4 +440,24 @@ public class EmployeeSalaryServiceImpl extends ServiceImpl<EmployeeSalaryMapper,
 
         return dto;
     }
+
+	@Override
+	public Message<String> deleteVoucher(GenerateVoucherDto dto) {
+        Integer voucherType = dto.getVoucherType();
+        EmployeeSalary salary = super.getById(dto.getId());
+        LambdaUpdateWrapper<EmployeeSalary> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(EmployeeSalary::getId, dto.getId());
+        List<String> ids = new ArrayList<>();
+        if(voucherType.equals(2)) {
+        	updateWrapper.set(EmployeeSalary::getAccrualVoucherId, null);
+        	ids.add(salary.getAccrualVoucherId());
+        }else if(voucherType.equals(3)) {
+        	updateWrapper.set(EmployeeSalary::getSalaryVoucherId, null);
+        	ids.add(salary.getSalaryVoucherId());
+        }
+        voucherService.delete(ids, salary.getBookId());
+        super.update(updateWrapper);
+        
+		return Message.ok("删除成功！");
+	}
 }

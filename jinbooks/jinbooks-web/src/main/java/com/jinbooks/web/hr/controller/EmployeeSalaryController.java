@@ -116,4 +116,10 @@ public class EmployeeSalaryController {
         dto.setBookId(currentUser.getBookId());
         return employeeSalaryService.generateVoucher(dto);
     }
+    
+    @PostMapping("/delete-voucher")
+    public Message<String> deleteVoucher(@Validated @RequestBody GenerateVoucherDto dto, @CurrentUser UserInfo currentUser) {
+        dto.setBookId(currentUser.getBookId());
+        return employeeSalaryService.deleteVoucher(dto);
+    }
 }

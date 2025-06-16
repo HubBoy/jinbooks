@@ -211,7 +211,7 @@
             {{ formatAmount(scope.row.businessExpenditureCosts) }}
           </template>
         </el-table-column>
-        <el-table-column label="收票凭证" align="center" width="60"
+        <el-table-column label="收票凭证" align="center" width="100"
                          :show-overflow-tooltip="true" fixed="right">
           <template #default="scope">
             <el-button v-if="scope.row.employeeType === 'PARTTIME' && (scope.row.accrualVoucherId === null ||scope.row.accrualVoucherId ==='')"
@@ -224,9 +224,14 @@
                        @click="viewVoucher(scope.row.accrualVoucherId)">
               查看
             </el-button>
+             <el-button v-if="scope.row.employeeType === 'PARTTIME' && scope.row.accrualVoucherId !== null &&scope.row.accrualVoucherId !==''"
+                       type="text"
+                       @click="deleteVoucher(scope.row,2)">
+              删除
+            </el-button>
           </template>
         </el-table-column>
-        <el-table-column label="发放凭证" align="center" width="60"
+        <el-table-column label="发放凭证" align="center" width="100"
                          :show-overflow-tooltip="true" fixed="right">
             <template #default="scope">
               <el-button v-if="scope.row.employeeType === 'PARTTIME' && (scope.row.salaryVoucherId === null ||scope.row.salaryVoucherId ==='')"
@@ -238,6 +243,11 @@
                          type="text"
                          @click="viewVoucher(scope.row.salaryVoucherId)">
                 查看
+              </el-button>
+              <el-button v-if="scope.row.employeeType === 'PARTTIME' && scope.row.salaryVoucherId !== null &&scope.row.salaryVoucherId !==''"
+                         type="text"
+                         @click="deleteVoucher(scope.row,3)">
+                删除
               </el-button>
             </template>
         </el-table-column>
@@ -296,7 +306,7 @@
 <script setup lang="ts">
 import {reactive, ref, toRefs, getCurrentInstance} from "vue";
 import {useI18n} from "vue-i18n";
-import {delSalary, exportSalary, fetchPage, salarySummary, generateVoucherSubmit} from "@/api/system/hr/employee-salary";
+import {delSalary, exportSalary, fetchPage, salarySummary, generateVoucherSubmit,deleteVoucherSubmit} from "@/api/system/hr/employee-salary";
 import {ElForm} from "element-plus";
 import modal from "@/plugins/modal";
 import {formatAmount} from "@/utils";
@@ -585,6 +595,15 @@ function generateVoucher(row: any, voucherType: number) {
       getList();
       modal.msgSuccess("操作成功");
       viewVoucher(res.data)
+    }
+  });
+}
+
+function deleteVoucher(row: any, voucherType: number) {
+  deleteVoucherSubmit({id: row.id, voucherType: voucherType}).then((res: any) => {
+    if (res.code === 0) {
+      getList();
+      modal.msgSuccess("操作成功");
     }
   });
 }

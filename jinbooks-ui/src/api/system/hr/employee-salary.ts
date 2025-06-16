@@ -64,3 +64,11 @@ export function generateVoucherSubmit(data: any) {
         data: data
     })
 }
+
+export function deleteVoucherSubmit(data: any) {
+    return request({
+        url: '/employee/salary/delete-voucher',
+        method: 'post',
+        data: data
+    })
+}
