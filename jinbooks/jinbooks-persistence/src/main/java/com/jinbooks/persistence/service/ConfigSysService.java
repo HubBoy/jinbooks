@@ -111,6 +111,13 @@ public interface ConfigSysService {
     String getCurrentTermLastDateString(String bookId);
     
     /**
+     * 账套上一期
+     * @param bookId
+     * @return
+     */
+    public String getPrevTerm(String bookId);
+    
+    /**
      * 账套下一期
      * @param bookId
      * @return

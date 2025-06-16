@@ -72,6 +72,7 @@ public class StatementSubjectBalanceServiceImpl implements StatementSubjectBalan
         LambdaQueryWrapper<StatementSubjectBalance> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(StatementSubjectBalance::getBookId, bookId);
         queryWrapper.eq(StatementSubjectBalance::getSubjectCode, subjectCode);
+        queryWrapper.eq(StatementSubjectBalance::getYearPeriod, configSysService.getCurrentTerm(bookId));
         return subjectBalanceMapper.selectOne(queryWrapper);
     }
     

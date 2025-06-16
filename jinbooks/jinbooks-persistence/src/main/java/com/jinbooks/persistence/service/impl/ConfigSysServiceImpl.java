@@ -143,6 +143,16 @@ public class ConfigSysServiceImpl implements ConfigSysService, ConfigService {
      * 获取下一期
      */
 	@Override
+	public String getPrevTerm(String bookId) {
+		String currentTerm = getCurrentTerm(bookId);
+		YearMonth currentTermYearMonth = YearMonth.parse(currentTerm);
+		return currentTermYearMonth.minusMonths(1).toString();
+	}
+	
+    /**
+     * 获取下一期
+     */
+	@Override
 	public String getNextTerm(String bookId) {
 		String currentTerm = getCurrentTerm(bookId);
 		YearMonth currentTermYearMonth = YearMonth.parse(currentTerm);

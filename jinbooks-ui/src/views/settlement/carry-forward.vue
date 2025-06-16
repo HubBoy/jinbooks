@@ -17,14 +17,14 @@
                     height="650"
                     @cell-mouse-enter="cellMouseEnter"
                     @cell-mouse-leave="cellMouseLeave">
-            <el-table-column label="编码" align="left" header-align="center" prop="code">
+            <el-table-column label="编码" align="left" header-align="center" prop="code"  width="150">
             </el-table-column>
             <el-table-column label="名称" align="left" header-align="center" prop="name">
             </el-table-column>
-            <el-table-column label="字头" align="center" prop="wordHead"/>
-            <el-table-column label="备注" align="left" prop="remark"/>
-            <el-table-column label="排序" align="left" prop="sortIndex" />
-            <el-table-column :label="$t('jbx.voucher.voucher')" align="center" prop="voucherId">
+            <el-table-column label="字头" align="center" prop="wordHead" width="80"/>
+            <el-table-column label="备注" align="left" prop="remark"  />
+            <el-table-column label="排序" align="left" prop="sortIndex"  width="80"/>
+            <el-table-column :label="$t('jbx.voucher.voucher')" align="center" prop="voucherId"   width="180">
               <template #default="scope">
                 <el-button v-if="scope.row.voucherId === null ||scope.row.voucherId ===''" type="primary"
                            @click="newVoucher(scope.row)">

@@ -140,11 +140,13 @@ public class SettlementCarryServiceImpl extends ServiceImpl<SettlementMapper, Se
 
         List<VoucherItemChangeDto> voucherItems = new ArrayList<>();
 
+        Map<String, VoucherTemplateItem> itemsMap = new HashMap<>();
+        for (VoucherTemplateItem item : items) {
+            itemsMap.put(item.getSubjectCode(), item);
+        }
+        
         if (voucherTemplate.getCode().startsWith("qm_jz_")) {
-            Map<String, VoucherTemplateItem> itemsMap = new HashMap<>();
-            for (VoucherTemplateItem item : items) {
-                itemsMap.put(item.getSubjectCode(), item);
-            }
+           
             //凭证 不转结
             voucherChangeDto.setCarryForward("y");
 
@@ -203,21 +205,79 @@ public class SettlementCarryServiceImpl extends ServiceImpl<SettlementMapper, Se
                 }
             }
         }else if (voucherTemplate.getCode().startsWith("jt_gz")||voucherTemplate.getCode().startsWith("jt_shebao")) {
+        	//计提本月
         	LambdaQueryWrapper<EmployeeSalarySummary> salaryWrapper = new LambdaQueryWrapper<>();
         	salaryWrapper.eq(EmployeeSalarySummary::getBelongDate, currentTerm);
         	salaryWrapper.eq(EmployeeSalarySummary::getBookId, bookId);
         	salaryWrapper.eq(EmployeeSalarySummary::getLabel, "salary");
         	salaryWrapper.eq(EmployeeSalarySummary::getDeleted, "n");
         	EmployeeSalarySummary summary = employeeSalarySummaryMapper.selectOne(salaryWrapper);
-        	 if (voucherTemplate.getCode().startsWith("jt_gz")){
-        		 for (VoucherTemplateItem item : items) {
-                     voucherItems.add(createVoucherItemDto(bookId, item, summary.getPayAmount()));
-                 }
-        	 }else if (voucherTemplate.getCode().startsWith("jt_shebao")){
-        		 for (VoucherTemplateItem item : items) {
-                     voucherItems.add(createVoucherItemDto(bookId, item, summary.getBusinessSocialInsurance()));
-                 }
-        	 }
+        	if(summary != null) {
+	        	 if (voucherTemplate.getCode().startsWith("jt_gz")){
+	        		 for (VoucherTemplateItem item : items) {
+	                     voucherItems.add(createVoucherItemDto(bookId, item, summary.getPayAmount()));
+	                 }
+	        	 }else if (voucherTemplate.getCode().startsWith("jt_shebao")){
+	        		 for (VoucherTemplateItem item : items) {
+	                     voucherItems.add(createVoucherItemDto(bookId, item, summary.getBusinessSocialInsurance()));
+	                 }
+	        	 }
+        	}
+        }else if (voucherTemplate.getCode().startsWith("zf_shebao")||voucherTemplate.getCode().startsWith("zf_gz")) {
+        	//支付上月
+        	String prevTerm = configSysService.getPrevTerm(bookId);
+        	LambdaQueryWrapper<EmployeeSalarySummary> salaryWrapper = new LambdaQueryWrapper<>();
+        	salaryWrapper.eq(EmployeeSalarySummary::getBelongDate, prevTerm);
+        	salaryWrapper.eq(EmployeeSalarySummary::getBookId, bookId);
+        	salaryWrapper.eq(EmployeeSalarySummary::getLabel, "salary");
+        	salaryWrapper.eq(EmployeeSalarySummary::getDeleted, "n");
+        	EmployeeSalarySummary summary = employeeSalarySummaryMapper.selectOne(salaryWrapper);
+        	if(summary != null) {
+	        	 if (voucherTemplate.getCode().startsWith("zf_gz")){
+	        		//银行存款计算
+	        		 BigDecimal creditYyckAmount = BigDecimal.ZERO;
+	        		 //应付职工薪酬
+	        		 if(itemsMap.containsKey("221101")) {
+	        			 debitAmount = summary.getPayAmount();
+	        			 creditYyckAmount = debitAmount;
+	        			 voucherItems.add(createVoucherItemDto(bookId, itemsMap.get("221101"), debitAmount));
+	        		 }
+	        		 //个人社保
+	        		 if(itemsMap.containsKey("122102")) {
+	        			 voucherItems.add(createVoucherItemDto(bookId, itemsMap.get("122102"), summary.getTotalSocialInsurance()));
+	        			 creditYyckAmount = creditYyckAmount.subtract(summary.getTotalSocialInsurance());
+	        		 }
+	        		 //个人所得税
+	        		 if(itemsMap.containsKey("222114")) {
+	        			 voucherItems.add(createVoucherItemDto(bookId, itemsMap.get("222114"), summary.getBusinessSocialInsurance()));
+	        			 creditYyckAmount = creditYyckAmount.subtract(summary.getBusinessSocialInsurance());
+	        		 }
+	        		 
+	        		 for (VoucherTemplateItem item : items) {
+	        			 if(item.getSubjectCode().startsWith("1002")) {
+	        				 voucherItems.add(createVoucherItemDto(bookId, item, creditYyckAmount));
+	        			 }
+	                 }
+	        		 creditAmount = debitAmount;
+	        	 }else if (voucherTemplate.getCode().startsWith("zf_shebao")){
+		        	if(itemsMap.containsKey("122102")) {
+		        		 //社保-个人
+		        		 debitAmount = debitAmount.add(summary.getTotalSocialInsurance());
+		        		 voucherItems.add(createVoucherItemDto(bookId, itemsMap.get("122102"), summary.getTotalSocialInsurance()));
+		        	}
+		        	if(itemsMap.containsKey("221103")) {
+		        		 //社保-单位
+		        		 debitAmount = debitAmount.add(summary.getBusinessSocialInsurance());
+		        		 voucherItems.add(createVoucherItemDto(bookId, itemsMap.get("221103"), summary.getBusinessSocialInsurance()));
+		        	}
+	        		 for (VoucherTemplateItem item : items) {
+	        			 if(item.getSubjectCode().startsWith("1002")) {
+	        				 voucherItems.add(createVoucherItemDto(bookId, item, debitAmount));
+	        			 }
+	                 }
+	        		 creditAmount = debitAmount;
+	        	 }
+        	}
         }else {
             for (VoucherTemplateItem item : items) {
                 voucherItems.add(createVoucherItemDto(bookId, item, BigDecimal.ZERO));
