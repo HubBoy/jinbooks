@@ -26,6 +26,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
@@ -41,6 +42,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.jinbooks.constants.ConstsStatus;
 import com.jinbooks.entity.ChangePassword;
 import com.jinbooks.entity.access.SessionList;
+import com.jinbooks.entity.book.vo.BookVo;
 import com.jinbooks.entity.config.ConfigLoginPolicy;
 import com.jinbooks.entity.history.HistoryLogin;
 import com.jinbooks.entity.idm.UserInfo;
@@ -48,6 +50,7 @@ import com.jinbooks.entity.permissions.Resources;
 import com.jinbooks.persistence.mapper.LoginMapper;
 import com.jinbooks.persistence.service.AuthzResourceService;
 import com.jinbooks.persistence.service.AuthzService;
+import com.jinbooks.persistence.service.BookService;
 import com.jinbooks.persistence.service.ConfigLoginPolicyService;
 import com.jinbooks.persistence.service.FileStorageService;
 import com.jinbooks.persistence.service.HistoryLoginService;
@@ -85,6 +88,9 @@ public class LoginServiceImpl  extends ServiceImpl<LoginMapper,UserInfo> impleme
 
     @Autowired
     AuthzResourceService authzResourceService;
+    
+    @Autowired
+    BookService bookService;
 
 	public LoginMapper getMapper() {
 		return loginMapper;
@@ -102,7 +108,18 @@ public class LoginServiceImpl  extends ServiceImpl<LoginMapper,UserInfo> impleme
 
     @Override
 	public UserInfo findByUsername(String loginName) {
-		return this.getMapper().findByUsername(loginName);
+    	UserInfo userInfo = this.getMapper().findByUsername(loginName);
+        if(StringUtils.isBlank(userInfo.getBookId())) {
+        	//未设置默认账号情况，读取有权限的账套的第一个
+        	List<BookVo> books = bookService.listBooks(userInfo.getId());
+        	if(CollectionUtils.isNotEmpty(books)) {
+        		userInfo.setBookId(books.get(0).getId());
+        		userInfoService.switchBook(userInfo);
+        	}else {
+        		userInfo.setBookId(userInfo.getId());
+        	}
+        }
+		return userInfo;
 	}
 
     @Override

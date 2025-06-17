@@ -4,7 +4,7 @@ const TokenKey: any = 'Admin-Token'
 const RefreshTokenKey: any = 'refresh_token'
 const TokenInfoKey: any = '_token'
 const UserInfoKey: any = 'user'
-const SetsKey: any = 'booksSet'
+const SetsKey: any = 'books'
 
 export function getToken(): any {
     return Cookies.get(TokenKey)

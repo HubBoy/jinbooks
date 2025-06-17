@@ -49,8 +49,8 @@ release_frontend.bat
 **/out/*
 
 
-jinbooks-web-fronted/package-lock.json
-jinbooks-web-fronted/yarn.lock
+jinbooks-ui/package-lock.json
+jinbooks-ui/yarn.lock
 package-lock.json
 /jinbooks/.gradle
 jinbooks/.gradle/*
