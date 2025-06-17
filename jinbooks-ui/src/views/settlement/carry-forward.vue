@@ -81,7 +81,7 @@
                   <el-input style="width: 300px" v-model="form.name" placeholder="请输入名称"/>
                 </el-form-item>
                 <el-form-item label="日期" prop="voucherDate" :required="true">
-                  <el-input-number style="width: 300px" v-model="form.voucherDate" placeholder="请输入日期，0是月末" :min="1" :max="31"/>
+                  <el-input-number style="width: 300px" v-model="form.voucherDate" placeholder="请输入日期，0是月末" :min="0" :max="31"/>
                 </el-form-item>
                 <el-form-item label="分类" prop="category" :required="true">
                   <el-select v-model="form.category" placeholder="选择" style="width: 300px">
