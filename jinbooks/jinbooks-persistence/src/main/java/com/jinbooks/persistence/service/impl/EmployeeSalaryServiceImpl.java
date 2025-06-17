@@ -324,7 +324,6 @@ public class EmployeeSalaryServiceImpl extends ServiceImpl<EmployeeSalaryMapper,
         
         String currentTerm = configSysService.getCurrentTerm(bookId);
 
-        Date monthEndDate = configSysService.getCurrentTermLastDate(bookId);
         int year = Integer.parseInt(currentTerm.split("-")[0]);
         int month = Integer.parseInt(currentTerm.split("-")[1]);
 
@@ -337,6 +336,20 @@ public class EmployeeSalaryServiceImpl extends ServiceImpl<EmployeeSalaryMapper,
         if(voucherTemplate == null) {
         	return Message.failed("凭证模板["+tplCode+"]未设置！");
         }
+        
+        Date voucherDate = null;
+        if(voucherTemplate.getVoucherDate().equals(0)) {
+        	voucherDate = configSysService.getCurrentTermLastDate(bookId);
+        }else if(0 < voucherTemplate.getVoucherDate() && voucherTemplate.getVoucherDate()< 31 ){
+        	String voucherDateString = "";
+        	if(voucherTemplate.getVoucherDate() < 10) {
+        		voucherDateString = currentTerm+"-0"+voucherTemplate.getVoucherDate();
+        	}else {
+        		voucherDateString = currentTerm+"-"+voucherTemplate.getVoucherDate();
+        	}
+        	voucherDate = DateUtils.parse(voucherDateString, DateUtils.FORMAT_DATE_YYYY_MM_DD);
+        }
+        
         logger.debug("voucherTemplate {}", voucherTemplate);
         LambdaQueryWrapper<VoucherTemplateItem> itemLqw = Wrappers.lambdaQuery();
         itemLqw.eq(VoucherTemplateItem::getRelatedId, voucherTemplate.getRelatedId());
@@ -385,7 +398,7 @@ public class EmployeeSalaryServiceImpl extends ServiceImpl<EmployeeSalaryMapper,
 
         Employee employee = employeeMapper.selectById(salary.getEmployeeId());
 
-        VoucherChangeDto voucherChangeDto = createVoucherChangeDto(book, bookId, monthEndDate, year, month, debitAmount);
+        VoucherChangeDto voucherChangeDto = createVoucherChangeDto(book, bookId, voucherDate, year, month, debitAmount);
         voucherChangeDto.setRemark(voucherTemplate.getRemark().replace("{yyyy}", year + "").replace("{mm}", month + "").replace("{name}", employee.getDisplayName()));
         voucherChangeDto.setItems(voucherItems);
         voucherChangeDto.setStatus(VoucherStatusEnum.DRAFT.getValue());

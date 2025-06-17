@@ -78,6 +78,11 @@ public class VoucherTemplate extends BaseEntity implements Serializable {
     Integer voucherType;
     
     /**
+     * 默认凭证日期，为月份的第几天，0为月末
+     */
+    Integer voucherDate;
+    
+    /**
      * 字头：“记”、“收”、“付”、“转”等
      */
     String wordHead;

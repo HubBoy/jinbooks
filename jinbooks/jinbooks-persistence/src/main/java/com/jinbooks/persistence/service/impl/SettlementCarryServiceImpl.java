@@ -45,6 +45,7 @@ import com.jinbooks.persistence.mapper.SettlementMapper;
 import com.jinbooks.persistence.mapper.VoucherTemplateItemMapper;
 import com.jinbooks.persistence.mapper.VoucherTemplateMapper;
 import com.jinbooks.persistence.service.*;
+import com.jinbooks.util.DateUtils;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -120,11 +121,23 @@ public class SettlementCarryServiceImpl extends ServiceImpl<SettlementMapper, Se
         BigDecimal debitAmount = BigDecimal.ZERO;
         BigDecimal creditAmount = BigDecimal.ZERO;
 
-        Date monthEndDate = configSysService.getCurrentTermLastDate(bookId);
+        Date voucherDate = null;
+        if(voucherTemplate.getVoucherDate().equals(0)) {
+        	voucherDate = configSysService.getCurrentTermLastDate(bookId);
+        }else if(0 < voucherTemplate.getVoucherDate() && voucherTemplate.getVoucherDate()< 31 ){
+        	String voucherDateString = "";
+        	if(voucherTemplate.getVoucherDate() < 10) {
+        		voucherDateString = currentTerm+"-0"+voucherTemplate.getVoucherDate();
+        	}else {
+        		voucherDateString = currentTerm+"-"+voucherTemplate.getVoucherDate();
+        	}
+        	voucherDate =DateUtils.parse(voucherDateString, DateUtils.FORMAT_DATE_YYYY_MM_DD);
+        }
+
         int year = Integer.parseInt(currentTerm.split("-")[0]);
         int month = Integer.parseInt(currentTerm.split("-")[1]);
 
-        VoucherChangeDto voucherChangeDto = createVoucherChangeDto(book, bookId, voucherTemplate.getWordHead(), monthEndDate, year, month, debitAmount);
+        VoucherChangeDto voucherChangeDto = createVoucherChangeDto(book, bookId, voucherTemplate.getWordHead(), voucherDate, year, month, debitAmount);
         voucherChangeDto.setRemark(voucherTemplate.getRemark().replace("{yyyy}", year + "").replace("{mm}", month + ""));
 
         List<VoucherItemChangeDto> voucherItems = new ArrayList<>();
