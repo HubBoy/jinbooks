@@ -334,6 +334,9 @@ public class EmployeeSalaryServiceImpl extends ServiceImpl<EmployeeSalaryMapper,
         itemTpl.eq(VoucherTemplate::getDeleted, "n");
         
         VoucherTemplate voucherTemplate = voucherTemplateMapper.selectOne(itemTpl);
+        if(voucherTemplate == null) {
+        	return Message.failed("凭证模板["+tplCode+"]未设置！");
+        }
         logger.debug("voucherTemplate {}", voucherTemplate);
         LambdaQueryWrapper<VoucherTemplateItem> itemLqw = Wrappers.lambdaQuery();
         itemLqw.eq(VoucherTemplateItem::getRelatedId, voucherTemplate.getRelatedId());
