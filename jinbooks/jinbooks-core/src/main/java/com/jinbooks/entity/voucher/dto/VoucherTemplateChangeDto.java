@@ -54,6 +54,11 @@ public class VoucherTemplateChangeDto {
     @NotNull(message = "凭证字头不能为空", groups = {AddGroup.class})
     String wordHead;
 
+    /**
+     * 默认凭证日期，为月份的第几天，0为月末
+     */
+    Integer voucherDate;
+    
     Integer voucherType;
 
     /**
