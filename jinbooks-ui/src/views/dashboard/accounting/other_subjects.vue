@@ -77,7 +77,7 @@ const data = reactive<DataState>({
 const {queryParams, resData} = toRefs(data);
 
 const handleSubjectChange = (value: any) => {
-  window.localStorage.setItem('fund_subject_code', subjectCode.value)
+  window.localStorage.setItem('fund_subject_code', subjectCode.value||'1002')
   queryParams.value.subjectCodes = [subjectCode.value]
   getList()
 }
@@ -234,7 +234,9 @@ onMounted(() => {
     bookId: currBookStore.bookId
   }).then((res: any) => {
     subjectList.value = res.data
-    subjectCode.value = window.localStorage.getItem('fund_subject_code') || subjectList.value[0].code
+    //默认科目 1002 银行存款
+    subjectCode.value = window.localStorage.getItem('fund_subject_code') || "1002"
+    console.log(window.localStorage.getItem('fund_subject_code')=='undefined')
     queryParams.value.subjectCodes = [subjectCode.value]
     getList()
   })
