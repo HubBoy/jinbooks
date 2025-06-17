@@ -208,7 +208,6 @@ public class VoucherTemplateServiceImpl extends ServiceImpl<VoucherTemplateMappe
 	public boolean insertBookTemplate(String bookId, String standardId) {
     	LambdaQueryWrapper<VoucherTemplate>templateWrapper = new LambdaQueryWrapper<>();
     	templateWrapper.eq(VoucherTemplate::getRelatedId, standardId);
-    	templateWrapper.eq(VoucherTemplate::getCategory, 1);//期末处理模板
         List<VoucherTemplate> templates = voucherTemplateMapper.selectList(templateWrapper);
         List<VoucherTemplateItem> newItems = new ArrayList<>();
         for(VoucherTemplate template: templates) {

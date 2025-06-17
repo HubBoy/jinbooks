@@ -13,6 +13,15 @@
               </el-option>
             </el-select>
           </el-form-item>
+          <el-form-item  label="类型：">
+            <el-radio-group v-model="queryParams.category" @change="getList">
+              <el-radio-button :value="0">全部</el-radio-button>
+              <el-radio-button :value="1">期末</el-radio-button>
+              <el-radio-button :value="2">计提</el-radio-button>
+              <el-radio-button :value="3">支付</el-radio-button>
+              <el-radio-button :value="4">常规</el-radio-button>
+            </el-radio-group>
+        </el-form-item>
         </el-form>
       </div>
     </el-card>
@@ -65,8 +74,10 @@
           </el-form-item>
           <el-form-item label="分类" prop="category" :required="true">
             <el-select  v-model="form.category" placeholder="选择" style="width: 300px">
-                  <el-option label="期末处理" value="1"></el-option>
-                  <el-option label="薪资凭证" value="2"></el-option>
+                  <el-option label="期末" value="1"></el-option>
+                  <el-option label="计提" value="2"></el-option>
+                  <el-option label="支付" value="3"></el-option>
+                  <el-option label="常规" value="4"></el-option>
                 </el-select>
           </el-form-item>
           <el-form-item label="字头" prop="wordHead" :required="true">
@@ -206,6 +217,7 @@ const data = reactive({
   queryParams: {
     periodType: 'month',
     standardId:'',
+    category:0,
     date: parseTime(new Date(), "{y}-{m}"),
     reportQuarter: getCurrentQuarter(),
     reportDate: parseTime(new Date(), "{y}-{m}"),
@@ -236,7 +248,7 @@ const disabledDate = (time: any) => {
 /** 查询列表 */
 function getList() {
   loading.value = true;
-  voucherTemplateService.list(queryParams.value.standardId).then((response: any) => {
+  voucherTemplateService.list(queryParams.value.standardId,queryParams.value.category).then((response: any) => {
     vouchertemplateList.value = response.data.records;
     //total.value = response.data.total;
     loading.value = false;

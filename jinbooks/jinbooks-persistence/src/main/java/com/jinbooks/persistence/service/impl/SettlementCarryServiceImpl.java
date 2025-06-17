@@ -82,9 +82,6 @@ public class SettlementCarryServiceImpl extends ServiceImpl<SettlementMapper, Se
     VoucherService voucherService;
 
     @Autowired
-    VoucherTemplateService voucherTemplateService;
-
-    @Autowired
     VoucherTemplateItemMapper voucherTemplateItemMapper;
 
     @Autowired
@@ -100,16 +97,8 @@ public class SettlementCarryServiceImpl extends ServiceImpl<SettlementMapper, Se
     EmployeeSalarySummaryMapper employeeSalarySummaryMapper;
 
     public Message<Page<SettlementCarryforwardVo>> fetchCarry(VoucherTemplatePageDto dto) {
-        dto.setCategory(1);//期末处理模板
         dto.setYearPeriod(configSysService.getCurrentTerm(dto.getBookId()));
         Page<SettlementCarryforwardVo> page = settlementCarryforwardMapper.pageList(dto.build(), dto);
-        if (page.getTotal() <= 0) {
-            Book book = bookMapper.selectById(dto.getRelatedId());
-            voucherTemplateService.insertBookTemplate(dto.getRelatedId(), book.getStandardId());
-            //重新查询数据
-            page = settlementCarryforwardMapper.pageList(dto.build(), dto);
-        }
-
         return Message.ok(page);
     }
 

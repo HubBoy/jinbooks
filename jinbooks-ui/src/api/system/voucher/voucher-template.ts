@@ -13,12 +13,13 @@ export function get(relatedId:string,id: string): any {
 }
 
 // 获取
-export function list(relatedId: string): any {
+export function list(relatedId: string,category: number): any {
     return request({
         url: '/vouchertemplate/fetch',
         method: 'get',
         params: {
-            relatedId: relatedId
+            relatedId: relatedId,
+            category :category
         }
     })
 }

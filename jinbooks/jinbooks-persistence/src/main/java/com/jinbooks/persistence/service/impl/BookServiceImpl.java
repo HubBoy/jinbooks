@@ -112,6 +112,9 @@ public class BookServiceImpl extends ServiceImpl<BookMapper, Book> implements Bo
 
         //新增默认科目和现金流量的关系
         standardSubjectCashFlowService.saveTemplateRelationships(dto.getId());
+        
+        //新增凭证模板
+        voucherTemplateService.insertBookTemplate(dto.getId(), dto.getStandardId());
 
         //新增账套
         Book newBook = new Book();
