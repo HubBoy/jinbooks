@@ -665,7 +665,10 @@ public class BookSubjectServiceImpl extends ServiceImpl<BookSubjectMapper, BookS
         List<BookSubject> listSubject = bookSubjectMapper.selectList(bookLqw);
         
         List<String>subjectCodes = new ArrayList<>();
-        subjectCodes.add(subjectCode);
+        for(BookSubject s : listSubject) {
+        	subjectCodes.add(s.getCode());
+        }
+        
         List<StatementSubjectBalance> listSubjectBalance=subjectBalanceService.selectSubjectBalance(bookId, subjectCodes);
         HashMap<String,StatementSubjectBalance> subjectBalanceMap = new HashMap<>();
         for(StatementSubjectBalance sb : listSubjectBalance) {

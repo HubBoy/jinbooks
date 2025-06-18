@@ -315,7 +315,7 @@ public class EmployeeSalaryServiceImpl extends ServiceImpl<EmployeeSalaryMapper,
         Book book = bookMapper.selectById(bookId);
         Integer voucherType = dto.getVoucherType();
         EmployeeSalary salary = super.getById(dto.getId());
-        String tplCode = (voucherType == 2 ? "jt_fp_lwf" : "zf_lwf");
+        String tplCode = (voucherType == 2 ? "fp_lwf" : "zf_lwf");
         if (voucherType == 2 && StringUtils.isNotBlank(salary.getAccrualVoucherId())) {
             return Message.ok("收票凭证已生成");
         } else if (voucherType == 3 && StringUtils.isNotBlank(salary.getSalaryVoucherId())) {
@@ -365,7 +365,7 @@ public class EmployeeSalaryServiceImpl extends ServiceImpl<EmployeeSalaryMapper,
             itemsMap.put(item.getSubjectCode(), item);
         }
         
-        if (voucherTemplate.getCode().equals("jt_fp_lwf")) {//收发票
+        if (voucherTemplate.getCode().equals("fp_lwf")) {//收发票
         	if(itemsMap.containsKey("660222")) {
 	       		 //劳务费
 	       		 debitAmount = debitAmount.add(salary.getPayAmount());

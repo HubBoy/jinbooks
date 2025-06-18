@@ -11,7 +11,6 @@
         <el-tab-pane label="期末处理" name="carry-forward">
           <el-form-item  label="类型：">
             <el-radio-group v-model="queryParams.category" @change="getList">
-              <el-radio-button :value="0">全部</el-radio-button>
               <el-radio-button :value="1">期末</el-radio-button>
               <el-radio-button :value="2">计提</el-radio-button>
               <el-radio-button :value="3">支付</el-radio-button>
@@ -259,7 +258,7 @@ const data = reactive({
   form: {...initFormData},
   queryParams: {
     bookId: currBookStore.bookId,
-    category:0
+    category:1
   },
   voucherForm: {},
   items: {

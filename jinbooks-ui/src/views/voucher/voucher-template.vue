@@ -15,7 +15,6 @@
           </el-form-item>
           <el-form-item  label="类型：">
             <el-radio-group v-model="queryParams.category" @change="getList">
-              <el-radio-button :value="0">全部</el-radio-button>
               <el-radio-button :value="1">期末</el-radio-button>
               <el-radio-button :value="2">计提</el-radio-button>
               <el-radio-button :value="3">支付</el-radio-button>
@@ -217,7 +216,7 @@ const data = reactive({
   queryParams: {
     periodType: 'month',
     standardId:'',
-    category:0,
+    category:1,
     date: parseTime(new Date(), "{y}-{m}"),
     reportQuarter: getCurrentQuarter(),
     reportDate: parseTime(new Date(), "{y}-{m}"),
