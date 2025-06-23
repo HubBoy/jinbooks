@@ -151,7 +151,7 @@
             <el-table-column prop="debitAmount" align="right" header-align="center" label="借方金额">
               <template #default="scope">
                 <span v-if="!scope.row.editing || scope.row.columnIndex !== 3" :class="{redWord:isRedWord(scope.row.debitAmount)}">
-                  {{ formatAmount(scope.row.debitAmount) }}
+                  {{ formatAmountRed(scope.row.debitAmount) }}
                 </span>
                 <el-input v-else v-model="scope.row.debitAmount"
                           @change="createTableData(scope.row, 1)"
@@ -162,7 +162,7 @@
             <el-table-column prop="creditAmount" align="right" header-align="center" label="贷方金额">
               <template #default="scope">
                 <span v-if="!scope.row.editing || scope.row.columnIndex !== 4">
-                  {{ formatAmount(scope.row.creditAmount) }}
+                  {{ formatAmountRed(scope.row.creditAmount) }}
                 </span>
                 <el-input v-else v-model="scope.row.creditAmount"
                           @change="createTableData(scope.row, 2)"
@@ -666,6 +666,14 @@ const formatAmount = (value: any) => {
   if (!value && value !== 0) return '';
   value = `￥ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   return value
+}
+
+const formatAmountRed = (value: any) => {
+  if (!value && value !== 0) return '';
+  if(new Decimal(value).lt(0)){
+    value = new Decimal(0).minus(new Decimal(value)) 
+  }
+  return formatAmount(value)
 }
 
 const isRedWord = (value: any) => {
