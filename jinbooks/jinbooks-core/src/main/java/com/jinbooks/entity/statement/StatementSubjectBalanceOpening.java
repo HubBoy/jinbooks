@@ -23,12 +23,11 @@ import com.jinbooks.entity.BaseEntity;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
-import java.io.Serial;
 import java.io.Serializable;
 import java.math.BigDecimal;
 
 /**
- * 科目余额 jbx_statement_subject_balance
+ * 科目余额期初数据 jbx_statement_subject_balance_opening
  *
  * @author wuyan
  * {@code @date} 2025-02-03
@@ -36,16 +35,18 @@ import java.math.BigDecimal;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
-@TableName("jbx_statement_subject_balance")
+@TableName("jbx_statement_subject_balance_opening")
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class StatementSubjectBalance extends BaseEntity implements Serializable {
-
-    @Serial
-    private static final long serialVersionUID = 1L;
+public class StatementSubjectBalanceOpening extends BaseEntity implements Serializable {
 
     /**
+	 * 
+	 */
+	private static final long serialVersionUID = -3640591095573870104L;
+
+	/**
      * 主键
      */
     @TableId(type = IdType.ASSIGN_ID)
