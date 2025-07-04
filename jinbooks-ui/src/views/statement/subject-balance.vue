@@ -7,9 +7,9 @@
             <el-switch v-model="queryParams.showAux" @change="handleQuery"/>
           </el-form-item>
 
-<!--          <el-form-item label="显示所有科目" prop="showAll">-->
-<!--            <el-switch v-model="queryParams.showAll" @change="handleQuery"/>-->
-<!--          </el-form-item>-->
+          <!--          <el-form-item label="显示所有科目" prop="showAll">-->
+          <!--            <el-switch v-model="queryParams.showAll" @change="handleQuery"/>-->
+          <!--          </el-form-item>-->
 
           <el-form-item label="" prop="defaultExpandAll">
             <el-checkbox @change="defaultExpandAll" :model-value="showTreeAll" label="展开所有层级"/>
@@ -97,7 +97,7 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="期初余额" align="center">
+        <el-table-column :label="queryParams.periodType === 'year'? '年初余额' : '期初余额'" align="center">
           <el-table-column prop="openingBalanceDebit" align="center" label="借方">
             <template #default="scope">
               {{ formatAmount(scope.row.openingBalanceDebit, '') }}
@@ -139,14 +139,14 @@
           <el-table-column prop="closingBalanceDebit" align="center" label="借方">
             <template #default="scope">
               <div :style="{backgroundColor: scope.row.closingBalanceDebit >= 0 ? '' : 'bisque'}">
-                 {{ formatAmount(scope.row.closingBalanceDebit, '') }}
+                {{ formatAmount(scope.row.closingBalanceDebit, '') }}
               </div>
             </template>
           </el-table-column>
           <el-table-column prop="closingBalanceCredit" align="center" label="贷方">
             <template #default="scope">
-               <div :style="{backgroundColor: scope.row.closingBalanceCredit >= 0 ? '' : 'bisque'}">
-                 {{ formatAmount(scope.row.closingBalanceCredit, '') }}
+              <div :style="{backgroundColor: scope.row.closingBalanceCredit >= 0 ? '' : 'bisque'}">
+                {{ formatAmount(scope.row.closingBalanceCredit, '') }}
               </div>
             </template>
           </el-table-column>

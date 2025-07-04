@@ -42,9 +42,13 @@
             <el-radio-group v-if="queryParams.periodType === 'quarter'" style="margin-left: 10px"
                             v-model="queryParams.reportQuarter" @change="handleQuery">
               <el-radio-button label="第一季度" value="Q1"></el-radio-button>
-              <el-radio-button label="第二季度" value="Q2"></el-radio-button>
-              <el-radio-button label="第三季度" value="Q3"></el-radio-button>
-              <el-radio-button label="第四季度" value="Q4"></el-radio-button>
+              <el-radio-button v-if="currBookStore.termCurrent >= (new Date().getFullYear() + '-04')"
+                               label="第二季度"
+                               value="Q2"></el-radio-button>
+              <el-radio-button v-if="currBookStore.termCurrent >= (new Date().getFullYear() + '-07')"
+                               label="第三季度" value="Q3"></el-radio-button>
+              <el-radio-button v-if="currBookStore.termCurrent >= (new Date().getFullYear() + '-10')"
+                               label="第四季度" value="Q4"></el-radio-button>
             </el-radio-group>
             <el-radio-group v-if="queryParams.periodType === 'halfYear'" style="margin-left: 10px"
                             v-model="queryParams.reportQuarter" @change="handleQuery">
@@ -94,7 +98,7 @@
             <template #default="scope">
               <span :style="{'text-indent': scope.row.level + 'em',
                display: 'inline-block', 'margin-right': '30px', fontWeight: scope.row.level === 1 ? 'bold' : ''}">
-                {{scope.row.symbol === '-' ? '减：' : ''}}{{ scope.row.itemName }}
+                {{ scope.row.symbol === '-' ? '减：' : '' }}{{ scope.row.itemName }}
               </span>
             </template>
           </el-table-column>
@@ -123,12 +127,12 @@
             <template #default="scope">
               <span :style="{'text-indent': scope.row.liabilityLevel + 'em',
                display: 'inline-block', 'margin-right': '30px', fontWeight: scope.row.liabilityLevel === 1 ? 'bold' : ''}">
-                {{scope.row.liabilitySymbol === '-' ? '减：' : ''}}{{ scope.row.liabilityItemName }}
+                {{ scope.row.liabilitySymbol === '-' ? '减：' : '' }}{{ scope.row.liabilityItemName }}
               </span>
             </template>
           </el-table-column>
           <el-table-column label="行次" align="center" width="100" prop="liabilitySortIndex"/>
-           <el-table-column label="期末余额" align="right" header-align="center" width="140"
+          <el-table-column label="期末余额" align="right" header-align="center" width="140"
                            prop="liabilityCurrentBalance">
             <template #default="scope">
               {{ formatAmount(scope.row.liabilityCurrentBalance, '') }}
@@ -164,30 +168,30 @@
       <template #default>
         <el-form :model="form" :rules="rules" ref="balanceSheetRef" label-width="68px"
                  inline-message>
-<!--          <el-form-item v-if="!form.id" label="级别" prop="level">-->
-<!--            <el-radio-group :disabled="!form.parentId" v-model="form.level">-->
-<!--              <el-radio-button label="本级" :value="level"/>-->
-<!--              <el-radio-button label="下级" :value="level + 1"/>-->
-<!--            </el-radio-group>-->
-<!--          </el-form-item>-->
-<!--          <el-form-item label="类型" prop="assetOrLiability">-->
-<!--            <el-radio-group disabled v-model="form.assetOrLiability">-->
-<!--              <el-radio-button label="资产" value="asset"/>-->
-<!--              <el-radio-button label="负债" value="liability"/>-->
-<!--            </el-radio-group>-->
-<!--          </el-form-item>-->
-<!--          <el-form-item label="编码" prop="itemCode">-->
-<!--            <el-input disabled style="width: 300px" v-model="form.itemCode" placeholder="请输入编码"/>-->
-<!--          </el-form-item>-->
+          <!--          <el-form-item v-if="!form.id" label="级别" prop="level">-->
+          <!--            <el-radio-group :disabled="!form.parentId" v-model="form.level">-->
+          <!--              <el-radio-button label="本级" :value="level"/>-->
+          <!--              <el-radio-button label="下级" :value="level + 1"/>-->
+          <!--            </el-radio-group>-->
+          <!--          </el-form-item>-->
+          <!--          <el-form-item label="类型" prop="assetOrLiability">-->
+          <!--            <el-radio-group disabled v-model="form.assetOrLiability">-->
+          <!--              <el-radio-button label="资产" value="asset"/>-->
+          <!--              <el-radio-button label="负债" value="liability"/>-->
+          <!--            </el-radio-group>-->
+          <!--          </el-form-item>-->
+          <!--          <el-form-item label="编码" prop="itemCode">-->
+          <!--            <el-input disabled style="width: 300px" v-model="form.itemCode" placeholder="请输入编码"/>-->
+          <!--          </el-form-item>-->
           <el-form-item label="编码" prop="itemCode">
             <el-input style="width: 300px" v-model="form.itemCode" placeholder="请输入编码" disabled/>
           </el-form-item>
           <el-form-item label="名称" prop="itemName">
             <el-input style="width: 300px" v-model="form.itemName" placeholder="请输入名称"/>
           </el-form-item>
-<!--          <el-form-item label="行号" prop="sortIndex">-->
-<!--            <el-input-number disabled :min="1" v-model="form.sortIndex" placeholder="请输入行号"/>-->
-<!--          </el-form-item>-->
+          <!--          <el-form-item label="行号" prop="sortIndex">-->
+          <!--            <el-input-number disabled :min="1" v-model="form.sortIndex" placeholder="请输入行号"/>-->
+          <!--          </el-form-item>-->
           <el-form-item v-if="form.level === 2" label="计算" prop="symbol">
             <el-radio-group v-model="form.symbol">
               <el-radio-button label="加" value="+"/>
