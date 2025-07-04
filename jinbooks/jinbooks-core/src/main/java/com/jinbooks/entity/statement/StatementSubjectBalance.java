@@ -169,6 +169,42 @@ public class StatementSubjectBalance extends BaseEntity implements Serializable 
     private BigDecimal closingBalanceCredit;
 
     /**
+     * 上月末余额
+     */
+    @Schema(name = "prevbalance", description = "上月余额")
+    @TableField(fill = FieldFill.INSERT)
+    private BigDecimal prevBalance;
+    
+
+    /**
+     * 上月期末余额（借方）
+     */
+    @Schema(name = "prevClosingBalanceDebit", description = "上月期末余额（借方）")
+    @TableField(fill = FieldFill.INSERT)
+    private BigDecimal prevClosingBalanceDebit;
+
+    /**
+     * 上月期末余额（贷方）
+     */
+    @Schema(name = "prevClosingBalanceCredit", description = "上月期末余额（贷方）")
+    @TableField(fill = FieldFill.INSERT)
+    private BigDecimal prevClosingBalanceCredit;
+    
+    /**
+     * 上月本年累计发生额（借方）
+     */
+    @Schema(name = "prevYearToDateDebit", description = "上月本年累计发生额（借方）")
+    @TableField(fill = FieldFill.INSERT)
+    private BigDecimal prevYearToDateDebit;
+
+    /**
+     * 上月本年累计发生额（贷方）
+     */
+    @Schema(name = "prevYearToDateCredit", description = "上月本年累计发生额（贷方）")
+    @TableField(fill = FieldFill.INSERT)
+    private BigDecimal prevYearToDateCredit;
+    
+    /**
      * 是否辅助核算项:n-否;y-是
      */
     private String isAuxiliary;

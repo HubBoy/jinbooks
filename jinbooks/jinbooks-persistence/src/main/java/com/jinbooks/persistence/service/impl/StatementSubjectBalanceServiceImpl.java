@@ -31,7 +31,6 @@ import com.jinbooks.entity.base.AssistAcc;
 import com.jinbooks.entity.book.BookSubject;
 import com.jinbooks.entity.book.Settlement;
 import com.jinbooks.entity.statement.StatementSubjectBalance;
-import com.jinbooks.entity.statement.StatementSubjectBalanceOpening;
 import com.jinbooks.entity.voucher.VoucherAuxiliary;
 import com.jinbooks.entity.voucher.VoucherItem;
 import com.jinbooks.enums.StatementPeriodTypeEnum;
@@ -41,12 +40,10 @@ import com.jinbooks.enums.YesNoEnum;
 import com.jinbooks.persistence.mapper.AssistAccMapper;
 import com.jinbooks.persistence.mapper.BookSubjectMapper;
 import com.jinbooks.persistence.mapper.StatementSubjectBalanceMapper;
-import com.jinbooks.persistence.mapper.StatementSubjectBalanceOpeningMapper;
 import com.jinbooks.persistence.mapper.VoucherItemMapper;
 import com.jinbooks.persistence.service.ConfigSysService;
 import com.jinbooks.persistence.service.StatementSubjectBalanceService;
 
-import cn.hutool.core.bean.BeanUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -70,7 +67,6 @@ public class StatementSubjectBalanceServiceImpl implements StatementSubjectBalan
     private final AssistAccMapper assistAccMapper;
     private final IdentifierGenerator identifierGenerator;
     private final VoucherItemMapper voucherItemMapper;
-    private final StatementSubjectBalanceOpeningMapper statementSubjectBalanceOpeningMapper;
 
     @Override
     public StatementSubjectBalance getSubjectBalance(String bookId, String subjectCode) {
@@ -454,19 +450,21 @@ public class StatementSubjectBalanceServiceImpl implements StatementSubjectBalan
                 statementSubjectBalance.setYearToDateDebit(BigDecimal.ZERO);
                 statementSubjectBalance.setYearToDateCredit(BigDecimal.ZERO);
             }
+            //上月期末余额
+            statementSubjectBalance.setPrevBalance(statementSubjectBalance.getBalance());
+            //上月期末借贷余额
+            statementSubjectBalance.setPrevClosingBalanceDebit(statementSubjectBalance.getPrevClosingBalanceDebit());
+            statementSubjectBalance.setPrevClosingBalanceCredit(statementSubjectBalance.getPrevClosingBalanceCredit());
+            //上月期末年度累计
+            statementSubjectBalance.setPrevYearToDateDebit(statementSubjectBalance.getYearToDateDebit());
+            statementSubjectBalance.setPrevYearToDateCredit(statementSubjectBalance.getYearToDateCredit());
+            //状态
             statementSubjectBalance.setIsVoucher(YesNoEnum.n.name());
             String currentId = identifierGenerator.nextId(statementSubjectBalance).toString();
             statementSubjectBalance.setId(currentId);
         }
         subjectBalanceMapper.insertBatch(subjectBalanceList);
-        List<StatementSubjectBalanceOpening> subjectBalanceOpeningList = new ArrayList<>();
-        
-        for( StatementSubjectBalance statementSubjectBalance: subjectBalanceList) {
-        	StatementSubjectBalanceOpening statementSubjectBalanceOpening = new StatementSubjectBalanceOpening();
-        	 BeanUtil.copyProperties(statementSubjectBalance, statementSubjectBalanceOpening);
-        	subjectBalanceOpeningList.add(statementSubjectBalanceOpening);
-        }
-        statementSubjectBalanceOpeningMapper.insertBatch(subjectBalanceOpeningList);
+
         return true;
     }
 

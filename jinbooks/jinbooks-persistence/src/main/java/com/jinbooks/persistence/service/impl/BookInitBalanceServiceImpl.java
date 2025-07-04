@@ -267,7 +267,16 @@ public class BookInitBalanceServiceImpl extends ServiceImpl<BookInitBalanceMappe
                 balance.setClosingBalanceCredit(balance.getOpeningBalanceCredit()
                         .subtract(balance.getOpeningBalanceDebit()));
             }
-
+            
+            //上月期末余额
+            balance.setPrevBalance(balance.getBalance());
+            //上月期末借贷余额
+            balance.setPrevClosingBalanceDebit(balance.getPrevClosingBalanceDebit());
+            balance.setPrevClosingBalanceCredit(balance.getPrevClosingBalanceCredit());
+            //上月期末年度累计
+            balance.setPrevYearToDateDebit(balance.getYearToDateDebit());
+            balance.setPrevYearToDateCredit(balance.getYearToDateCredit());
+            
             updateBalances.add(balance);
         }
         statementSubjectBalanceMapper.insertOrUpdateBatch(updateBalances);

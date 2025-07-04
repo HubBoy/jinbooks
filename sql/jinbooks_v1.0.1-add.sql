@@ -17,3 +17,13 @@ DROP TABLE `jinbooks`.`jbx_employee_salary_voucher_rule_template`, `jinbooks`.`j
 
 ALTER TABLE `jinbooks`.`jbx_voucher_template` 
 ADD COLUMN `voucher_date` SMALLINT NULL DEFAULT 0 COMMENT '默认凭证日期，为月份的第几天，0为月末' AFTER `voucher_type`;
+
+
+-- 上月数据
+
+ALTER TABLE `jinbooks`.`jbx_statement_subject_balance` 
+ADD COLUMN `prev_balance` DECIMAL(18,2) NOT NULL DEFAULT '0.00' COMMENT '上月末余额' AFTER `closing_balance_credit`,
+ADD COLUMN `prev_closing_balance_debit` DECIMAL(18,2) NOT NULL DEFAULT '0.00' COMMENT '上月期末余额（借方）' AFTER `prev_balance`,
+ADD COLUMN `prev_closing_balance_credit` DECIMAL(18,2) NOT NULL DEFAULT '0.00' COMMENT '上月期末余额（贷方）' AFTER `prev_closing_balance_debit`,
+ADD COLUMN `prev_year_to_date_debit` DECIMAL(18,2) NOT NULL DEFAULT '0.00' COMMENT '上月本年累计发生额（借方）' AFTER `prev_closing_balance_credit`,
+ADD COLUMN `prev_year_to_date_credit` DECIMAL(18,2) NOT NULL DEFAULT '0.00' COMMENT '上月本年累计发生额（贷方）' AFTER `prev_year_to_date_debit`;
