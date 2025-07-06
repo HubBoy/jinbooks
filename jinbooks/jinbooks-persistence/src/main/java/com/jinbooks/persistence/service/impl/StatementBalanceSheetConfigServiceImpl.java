@@ -105,7 +105,7 @@ public class StatementBalanceSheetConfigServiceImpl implements StatementBalanceS
         lqw.eq(StatementBalanceSheetItem::getBookId, bookId);
         lqw.eq(StatementBalanceSheetItem::getBalanceSheetId, ConstsSysConfig.SYS_CONFIG_TEMPLATE_ID);
         List<StatementBalanceSheetItem> balanceSheets = statementBalanceSheetItemMapper.selectList(lqw);
-        statementBalanceSheetService.refreshItemsBalance(balanceSheets, bookId, configSysService.getCurrentTerm(bookId));
+        statementBalanceSheetService.refreshItemsBalance(balanceSheets, bookId, configSysService.getCurrentTerm(bookId), 3);
         StatementBalanceSheetItemListVo itemListVo = statementBalanceSheetService.insertSubtotals(balanceSheets);
         itemListVo.getAssets().sort(Comparator.comparing(StatementBalanceSheetItem::getItemCode));
         itemListVo.getLiability().sort(Comparator.comparing(StatementBalanceSheetItem::getItemCode));

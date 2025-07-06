@@ -1,16 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Configuration status="INFO" monitorInterval="300">
+<Configuration status="WARN" monitorInterval="300">
     <Appenders>
-        <Console name="consolePrint" target="SYSTEM_OUT">
-            <PatternLayout pattern="%d{YYYY-MM-dd HH:mm:ss.SSS} %highlight{%level} [%t] %logger{36}:%L - %msg%n"/>
+        <!-- 控制台输出 -->
+        <Console name="ConsoleAppender" target="SYSTEM_OUT">
+            <PatternLayout
+                    pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} %highlight{%-5level} [%t] %style{%logger{36}}{cyan}:%L - %msg%n"
+                    disableAnsi="false" noConsoleNoAnsi="false"/>
         </Console>
 
-        <!-- 输出到文件，按天或者超过128MB分割 -->
-        <RollingFile name="RollingFile" fileName="logs/jinbooks.log"
+
+        <!-- 滚动日志输出：每天生成 + 超过128MB滚动，最多保留15个文件 -->
+        <RollingFile name="RollingFileAppender"
+                     fileName="logs/jinbooks.log"
                      filePattern="logs/$${date:yyyyMMdd}/jinbooks-%d{yyyy-MM-dd}-%i.log.gz">
-            <!-- 需要记录的级别 -->
-            <!-- <ThresholdFilter level="info" onMatch="ACCEPT" onMismatch="DENY" /> -->
-            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss,SSS} %-5level [%t] (%logger{36}:%L) - %msg%n"/>
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%t] (%logger{36}:%L) - %msg%n"/>
             <Policies>
                 <OnStartupTriggeringPolicy/>
                 <TimeBasedTriggeringPolicy/>
@@ -21,40 +24,50 @@
     </Appenders>
 
     <Loggers>
-        <!-- 设置 MyBatis 和 MyBatis-Plus 的日志级别 -->
+        <!-- MyBatis 相关调试日志 -->
         <Logger name="com.baomidou.mybatisplus" level="DEBUG" additivity="false">
-            <AppenderRef ref="consolePrint"/>
-            <AppenderRef ref="RollingFile"/>
+            <AppenderRef ref="ConsoleAppender"/>
+            <AppenderRef ref="RollingFileAppender"/>
         </Logger>
+
         <Logger name="org.apache.ibatis" level="DEBUG" additivity="false">
-            <AppenderRef ref="consolePrint"/>
-            <AppenderRef ref="RollingFile"/>
-        </Logger>
-        <!-- 更详细的 SQL 执行日志 -->
-        <Logger name="org.apache.ibatis.executor.statement" level="TRACE" additivity="false">
-            <AppenderRef ref="Console"/>
-            <AppenderRef ref="RollingFile"/>
+            <AppenderRef ref="ConsoleAppender"/>
+            <AppenderRef ref="RollingFileAppender"/>
         </Logger>
 
-        <Logger name="org.apache.ibatis.transaction.jdbc" level="TRACE" additivity="false">
-            <AppenderRef ref="Console"/>
-            <AppenderRef ref="RollingFile"/>
+        <!-- SQL 执行器详细日志 -->
+        <Logger name="org.apache.ibatis.executor.statement" level="INFO" additivity="false">
+            <AppenderRef ref="ConsoleAppender"/>
+            <AppenderRef ref="RollingFileAppender"/>
+        </Logger>
+        <Logger name="org.apache.ibatis.transaction.jdbc" level="INFO" additivity="false">
+            <AppenderRef ref="ConsoleAppender"/>
+            <AppenderRef ref="RollingFileAppender"/>
         </Logger>
 
-        <Logger level="TRACE"	name="com.jinbooks.persistence.mapper" ></Logger>
-        <Logger level="OFF" name="org.hibernate.validator.internal.util.Version"></Logger>
+        <!-- 项目 DAO 层日志 -->
+        <Logger name="com.jinbooks.persistence.mapper" level="TRACE" additivity="false">
+            <AppenderRef ref="RollingFileAppender"/>
+        </Logger>
 
-        <Logger level="INFO" name="org.apache.logging"></Logger>
-        <Logger level="INFO" name="org.springframework"></Logger>
-        <Logger level="DEBUG" name="com.jinbooks"></Logger>
-        <Logger level="ERROR" name="com.alibaba.nacos"></Logger>
-        <Logger level="ERROR" name="org.reflections.Reflections"></Logger>
-        <Logger level="ERROR" name="RocketmqRemoting"></Logger>
-        <Logger level="OFF" name="org.quartz"></Logger>
+        <!-- 关闭不需要的日志输出 -->
+        <Logger name="org.hibernate.validator.internal.util.Version" level="OFF"/>
+        <Logger name="org.quartz" level="OFF"/>
 
+        <!-- 常见框架日志配置 -->
+        <Logger name="org.springframework" level="INFO"/>
+        <Logger name="org.apache.logging" level="INFO"/>
+        <Logger name="com.alibaba.nacos" level="ERROR"/>
+        <Logger name="org.reflections.Reflections" level="ERROR"/>
+        <Logger name="RocketmqRemoting" level="ERROR"/>
+
+        <!-- 项目主包日志 -->
+        <Logger name="com.jinbooks" level="DEBUG"/>
+
+        <!-- 根日志配置 -->
         <Root level="INFO">
-            <AppenderRef ref="consolePrint"/>
-            <AppenderRef ref="RollingFile"/>
+            <AppenderRef ref="ConsoleAppender"/>
+            <AppenderRef ref="RollingFileAppender"/>
         </Root>
     </Loggers>
 </Configuration>

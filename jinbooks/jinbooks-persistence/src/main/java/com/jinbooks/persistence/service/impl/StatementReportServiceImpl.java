@@ -360,52 +360,59 @@ public class StatementReportServiceImpl implements StatementReportService {
     @Override
     public Message<List<StatementSubjectBalance>> subjectBalance(StatementParamsDto dto) {
         dto.parse();
-        List<String> allMonths = dto.getAllMonths();
-        LambdaQueryWrapper<StatementSubjectBalance> lqw = Wrappers.lambdaQuery();
-        lqw.in(StatementSubjectBalance::getYearPeriod, allMonths);
-        lqw.eq(StatementSubjectBalance::getBookId, dto.getBookId());
-        lqw.eq(!dto.getShowAll(), StatementSubjectBalance::getIsVoucher, YesNoEnum.y.name());
-        List<StatementSubjectBalance> res = subjectBalanceMapper.selectList(lqw);
+        String currentTerm = configSysService.selectConfigByKey(dto.getBookId(), ConstsSysConfig.SYS_PAYMENT_TERM_CURRENT);
+        List<String> allMonths = dto.getAllMonths(currentTerm);
 
-        // 拉取父级数据
-        List<String> subjectIds = new ArrayList<>(res.stream().map(StatementSubjectBalance::getSourceId).toList());
-        List<String> parentIds = res.stream().filter(item -> item.getIsAuxiliary().equals(YesNoEnum.y.name()))
-                .map(StatementSubjectBalance::getParentId).toList();
-        subjectIds.addAll(parentIds);
-        if (!subjectIds.isEmpty()) {
-            LambdaQueryWrapper<BookSubject> lqwSubject = Wrappers.lambdaQuery();
-            lqwSubject.eq(BookSubject::getBookId, dto.getBookId());
-            List<BookSubject> bookSubjects = bookSubjectMapper.selectList(lqwSubject);
-            // 找出所有父级
-            List<String> subjectPaths = new ArrayList<>();
-            bookSubjects.forEach(bookSubject -> {
-                for (String subjectId : subjectIds) {
-                    if (bookSubject.getIdPath().contains(subjectId)) {
-                        subjectPaths.addAll(List.of(bookSubject.getIdPath().split("/")));
-                    }
-                }
-            });
-            // 创建父级
-            List<StatementSubjectBalance> balanceList = bookSubjects.stream()
-                    .filter(bookSubject -> subjectPaths.contains(bookSubject.getId()))
-                    .map(subject -> subjectBalanceService.create(subject, dto.getReportDate()))
-                    .toList();
-            // 合并
-            Set<String> existingSourceIds = res.stream().map(StatementSubjectBalance::getSourceId).collect(Collectors.toSet());
-            for (StatementSubjectBalance item : balanceList) {
-                if (!existingSourceIds.contains(item.getSourceId())) {
-                    res.add(item);
-                }
-            }
+        List<StatementSubjectBalance> res = null;
+        if (allMonths.size() > 1) {
+            res = subjectBalanceMapper.groupCodeSubjectBalance(dto, allMonths,allMonths.get(0), allMonths.get(allMonths.size() - 1));
+        } else {
+            LambdaQueryWrapper<StatementSubjectBalance> lqw = Wrappers.lambdaQuery();
+            lqw.in(StatementSubjectBalance::getYearPeriod, allMonths);
+            lqw.eq(StatementSubjectBalance::getBookId, dto.getBookId());
+            lqw.eq(!dto.getShowAll(), StatementSubjectBalance::getIsVoucher, YesNoEnum.y.name());
+            res = subjectBalanceMapper.selectList(lqw);
         }
+
+//        // 拉取父级数据
+//        List<String> subjectIds = new ArrayList<>(res.stream().map(StatementSubjectBalance::getSourceId).toList());
+//        List<String> parentIds = res.stream().filter(item -> item.getIsAuxiliary().equals(YesNoEnum.y.name()))
+//                .map(StatementSubjectBalance::getParentId).toList();
+//        subjectIds.addAll(parentIds);
+//        if (!subjectIds.isEmpty()) {
+//            LambdaQueryWrapper<BookSubject> lqwSubject = Wrappers.lambdaQuery();
+//            lqwSubject.eq(BookSubject::getBookId, dto.getBookId());
+//            List<BookSubject> bookSubjects = bookSubjectMapper.selectList(lqwSubject);
+//            // 找出所有父级
+//            Set<String> subjectPaths = new HashSet<>();
+//            bookSubjects.forEach(bookSubject -> {
+//                for (String subjectId : subjectIds) {
+//                    if (bookSubject.getIdPath().contains(subjectId)) {
+//                        subjectPaths.addAll(List.of(bookSubject.getIdPath().split("/")));
+//                    }
+//                }
+//            });
+//            // 创建父级
+//            List<StatementSubjectBalance> balanceList = bookSubjects.stream()
+//                    .filter(bookSubject -> subjectPaths.contains(bookSubject.getId()))
+//                    .map(subject -> subjectBalanceService.create(subject, dto.getReportDate()))
+//                    .toList();
+//            // 合并
+//            Set<String> existingSourceIds = res.stream().map(StatementSubjectBalance::getSourceId).collect(Collectors.toSet());
+//            for (StatementSubjectBalance item : balanceList) {
+//                if (!existingSourceIds.contains(item.getSourceId())) {
+//                    res.add(item);
+//                }
+//            }
+//        }
 //        counterBalance(res);
 
         // 按照科目编号升序排列
         res.sort(Comparator.comparing(StatementSubjectBalance::getSubjectCode));
 
-        if (!dto.getShowAux()) {
-            res = res.stream().filter(item -> item.getIsAuxiliary().equals(YesNoEnum.n.name())).toList();
-        }
+//        if (!dto.getShowAux()) {
+//            res = res.stream().filter(item -> item.getIsAuxiliary().equals(YesNoEnum.n.name())).toList();
+//        }
         return new Message<>(res);
     }
 

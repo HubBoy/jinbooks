@@ -60,7 +60,7 @@ public interface StatementBalanceSheetService {
     void updateRuleBalance(StatementSubjectBalance subjectBalance, StatementRules statementRules);
 
     void refreshItemsBalance(List<StatementBalanceSheetItem> items,
-                             String bookId, String yearPeriod);
+                             String bookId, String yearPeriod, int updateParams);
 
     StatementBalanceSheetItemListVo insertSubtotals(List<StatementBalanceSheetItem> items);
     

@@ -1,12 +1,12 @@
 /*
  * Copyright [2025] [JinBooks of copyright http://www.jinbooks.com]
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  */
- 
+
 
 package com.jinbooks.entity.statement.dto;
 
@@ -26,8 +26,11 @@ import com.jinbooks.util.DateUtils;
 import lombok.*;
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.Serial;
+import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,12 +48,13 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class StatementParamsDto extends PageQuery {
-	
+
     /**
-	 * 
-	 */
-	private static final long serialVersionUID = -3371902023167307161L;
-	/**
+     *
+     */
+    @Serial
+    private static final long serialVersionUID = -3371902023167307161L;
+    /**
      * 账套ID
      */
     private String bookId;
@@ -102,7 +106,7 @@ public class StatementParamsDto extends PageQuery {
      * 显示所有科目
      */
     private Boolean showAll;
-    
+
     /**
      * 科目编码过滤
      */
@@ -123,13 +127,28 @@ public class StatementParamsDto extends PageQuery {
                 this.year = Integer.parseInt(reportDate.substring(0, 4));
                 this.month = null;
                 this.quarter = null;
-                // 设置全年起始和结束日期
-                this.dateRange = new String[]{this.year + "-01",this.year + "-12"};
-                //年初日期
-                this.dateRangeStart = year + "-01-01";
-                //年终日期
-                this.dateRangeEnd = year + "-12-31";
-                this.reportDate = this.year + "-12";
+                // 年初日期固定
+                this.dateRangeStart = this.year + "-01-01";
+                // 当前系统日期
+                LocalDate now = LocalDate.now();
+                int currentYear = now.getYear();
+                if (this.year == currentYear) {
+                    // 当前是本年度，终止为本月最后一天
+                    int currentMonth = now.getMonthValue();
+                    LocalDate lastDayOfCurrentMonth = now.with(TemporalAdjusters.lastDayOfMonth());
+                    // 设置 dateRange 为 01 到当前月
+                    this.dateRange = new String[]{
+                            String.format("%d-01", this.year),
+                            String.format("%d-%02d", this.year, currentMonth)
+                    };
+                    this.dateRangeEnd = lastDayOfCurrentMonth.toString();
+                    this.reportDate = String.format("%d-%02d", this.year, currentMonth);
+                } else {
+                    // 非本年度，默认整年
+                    this.dateRange = new String[]{this.year + "-01", this.year + "-12"};
+                    this.dateRangeEnd = this.year + "-12-31";
+                    this.reportDate = this.year + "-12";
+                }
             } else if (StatementPeriodTypeEnum.MONTH.getValue().equals(this.periodType)) {
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM");
                 var date = java.time.YearMonth.parse(reportDate, formatter);
@@ -161,8 +180,8 @@ public class StatementParamsDto extends PageQuery {
                 this.month = null;
 
                 if (this.quarter == 1) {
-                	//报告年月
-                	this.reportDate = this.year + "-03";
+                    //报告年月
+                    this.reportDate = this.year + "-03";
                     //季初日期
                     this.dateRangeStart = this.year + "-01-01";
                     //季末日期
@@ -170,8 +189,8 @@ public class StatementParamsDto extends PageQuery {
                     //月份范围
                     this.dateRange = new String[]{this.year + "-01", this.year + "-03"};
                 } else if (this.quarter == 2) {
-                	//报告年月
-                	this.reportDate = this.year + "-06";
+                    //报告年月
+                    this.reportDate = this.year + "-06";
                     //季初日期
                     this.dateRangeStart = this.year + "-04-01";
                     //季末日期
@@ -179,8 +198,8 @@ public class StatementParamsDto extends PageQuery {
                     //月份范围
                     this.dateRange = new String[]{this.year + "-04", this.year + "-06"};
                 } else if (this.quarter == 3) {
-                	//报告年月
-                	this.reportDate = this.year + "-09";
+                    //报告年月
+                    this.reportDate = this.year + "-09";
                     //季初日期
                     this.dateRangeStart = this.year + "-07-01";
                     //季末日期
@@ -188,8 +207,8 @@ public class StatementParamsDto extends PageQuery {
                     //月份范围
                     this.dateRange = new String[]{this.year + "-07", this.year + "-09"};
                 } else if (this.quarter == 4) {
-                	//报告年月
-                	this.reportDate = this.year + "-12";
+                    //报告年月
+                    this.reportDate = this.year + "-12";
                     //季初日期
                     this.dateRangeStart = this.year + "-10-01";
                     //季末日期
@@ -200,17 +219,17 @@ public class StatementParamsDto extends PageQuery {
                 this.year = Integer.parseInt(reportDate.substring(0, 4));
                 this.half = parseHalfYear(reportDate.substring(5, 7));
                 if (this.half == 1) {
-                	//报告年月
-                	this.reportDate = this.year + "-06";
-                	//起始-终结日期
+                    //报告年月
+                    this.reportDate = this.year + "-06";
+                    //起始-终结日期
                     this.dateRangeStart = this.year + "-01-01";
                     this.dateRangeEnd = this.year + "-06-30";
                     //月份范围
                     this.dateRange = new String[]{this.year + "-01", this.year + "-06"};
                 } else if (this.half == 2) {
-                	//报告年月
-                	this.reportDate = this.year + "-12";
-                	//起始-终结日期
+                    //报告年月
+                    this.reportDate = this.year + "-12";
+                    //起始-终结日期
                     this.dateRangeStart = this.year + "-07-01";
                     this.dateRangeEnd = this.year + "-12-31";
                     //月份范围
@@ -248,13 +267,20 @@ public class StatementParamsDto extends PageQuery {
      * 获取时间范围中的所有月份
      */
     public List<String> getAllMonths() {
+        return getAllMonths(null);
+    }
+
+    public List<String> getAllMonths(String currentMonth) {
         List<String> months = new ArrayList<>();
         if (dateRange == null || dateRange.length != 2) {
             throw new IllegalArgumentException("dateRange must contain exactly two elements: start and end.");
         }
 
         YearMonth start = YearMonth.parse(dateRange[0]);
-        YearMonth end = YearMonth.parse(dateRange[1]);
+        YearMonth end = currentMonth == null ? YearMonth.parse(dateRange[1])
+                : currentMonth.compareTo(dateRange[1]) > 0
+                ? YearMonth.parse(dateRange[1])
+                : YearMonth.parse(currentMonth);
 
         if (start.isAfter(end)) {
             throw new IllegalArgumentException("Start date must be before or equal to end date.");
@@ -269,6 +295,7 @@ public class StatementParamsDto extends PageQuery {
         return months;
     }
 
+
     /**
      * 判断是否是季报所在月份
      *
@@ -278,9 +305,10 @@ public class StatementParamsDto extends PageQuery {
         this.parse();
         return isQuarterReportMonth(this.dateRange[1]);
     }
-    
+
     /**
      * 判断是否季末
+     *
      * @param yyyy_MM 2025-03 2025-06 2025-09 2025-12
      * @return boolean
      */
@@ -300,9 +328,10 @@ public class StatementParamsDto extends PageQuery {
         this.parse();
         return isYearReportMonth(this.dateRange[1]);
     }
-    
+
     /**
      * 判断是否12月
+     *
      * @param yyyy_MM 2025-12
      * @return boolean
      */

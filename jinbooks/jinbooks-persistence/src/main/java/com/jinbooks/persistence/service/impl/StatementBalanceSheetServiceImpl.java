@@ -1,12 +1,12 @@
 /*
  * Copyright [2025] [JinBooks of copyright http://www.jinbooks.com]
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  */
- 
+
 
 package com.jinbooks.persistence.service.impl;
 
@@ -91,7 +91,7 @@ public class StatementBalanceSheetServiceImpl implements StatementBalanceSheetSe
         StatementBalanceSheet balanceSheet = balanceSheetMapper.selectOne(lqw);
 
         String currentTerm = configSysService.getCurrentTerm(dto.getBookId());
-        List<String> allMonths = dto.getAllMonths();
+        List<String> allMonths = dto.getAllMonths(currentTerm);
         List<StatementBalanceSheetItem> items;
         // 查询范围包含了当前期,或者没数据，则实时统计
         boolean isNull = balanceSheet == null;
@@ -126,12 +126,15 @@ public class StatementBalanceSheetServiceImpl implements StatementBalanceSheetSe
                     //balanceSheetMapper.insert(balanceSheet);
                 }
 
-                // 遍历月份，统计总金额
-                for (String month : allMonths) {
-                    refreshItemsBalance(items, dto.getBookId(), month);
+                // 统计总金额,因为是期末和年初，则只需要统计第一个月和最后一个月的数额
+                if (allMonths.size() == 1) {
+                    refreshItemsBalance(items, dto.getBookId(), allMonths.get(0), 3);
+                } else {
+                    refreshItemsBalance(items, dto.getBookId(), allMonths.get(0), 1);
+                    refreshItemsBalance(items, dto.getBookId(), allMonths.get(allMonths.size() - 1), 2);
                 }
             }
-        }else {// 拉取历史数据
+        } else {// 拉取历史数据
             // 查询条目
             LambdaQueryWrapper<StatementBalanceSheetItem> itemLqw = Wrappers.lambdaQuery();
             itemLqw.eq(StatementBalanceSheetItem::getBookId, dto.getBookId());
@@ -363,17 +366,18 @@ public class StatementBalanceSheetServiceImpl implements StatementBalanceSheetSe
 
         return true;
     }
-    
+
     /**
      * 刷新信息项对应的余额数据
      *
-     * @param items      信息项组
-     * @param bookId     所属账簿
-     * @param yearPeriod 账期
+     * @param items        信息项组
+     * @param bookId       所属账簿
+     * @param yearPeriod   账期
+     * @param updateParams 需要更新的金额项：1：年初，2：期末，3：同时
      */
     @Override
     public void refreshItemsBalance(List<StatementBalanceSheetItem> items,
-                                    String bookId, String yearPeriod) {
+                                    String bookId, String yearPeriod, int updateParams) {
         // 方便更新参数
         Map<String, StatementBalanceSheetItem> mapSheet = items.stream()
                 .collect(Collectors.toMap(StatementBalanceSheetItem::getItemCode, item -> item));
@@ -383,7 +387,9 @@ public class StatementBalanceSheetServiceImpl implements StatementBalanceSheetSe
         lqwRule.in(StatementRules::getItemCode, itemCodes);
         lqwRule.eq(StatementRules::getBookId, bookId);
         lqwRule.eq(StatementRules::getType, StatementTypeEnum.balance_sheet.name());
+        // 相关的所有规则
         List<StatementRules> rules = rulesMapper.selectList(lqwRule);
+        // 所有规则下的绑定科目编号
         List<String> subjectCodes = rules.stream().map(StatementRules::getSubjectCode).toList();
         if (CollectionUtils.isNotEmpty(subjectCodes)) {
             // 查询科目余额
@@ -400,11 +406,19 @@ public class StatementBalanceSheetServiceImpl implements StatementBalanceSheetSe
                 updateRuleBalance(subjectBalance, statementRules);
                 StatementBalanceSheetItem balanceSheet = mapSheet.get(statementRules.getItemCode());
                 if (StatementSymbolEnum.PLUS.getValue().equals(statementRules.getSymbol())) {
-                    balanceSheet.setInitialBalance(balanceSheet.getInitialBalance().add(statementRules.getOpeningYearBalance()));
-                    balanceSheet.setCurrentBalance(balanceSheet.getCurrentBalance().add(statementRules.getClosingBalance()));
+                    if (updateParams == 1 || updateParams == 3) {
+                        balanceSheet.setInitialBalance(balanceSheet.getInitialBalance().add(statementRules.getOpeningYearBalance()));
+                    }
+                    if (updateParams == 2 || updateParams == 3) {
+                        balanceSheet.setCurrentBalance(balanceSheet.getCurrentBalance().add(statementRules.getClosingBalance()));
+                    }
                 } else {
-                    balanceSheet.setInitialBalance(balanceSheet.getInitialBalance().subtract(statementRules.getOpeningYearBalance()));
-                    balanceSheet.setCurrentBalance(balanceSheet.getCurrentBalance().subtract(statementRules.getClosingBalance()));
+                    if (updateParams == 1 || updateParams == 3) {
+                        balanceSheet.setInitialBalance(balanceSheet.getInitialBalance().subtract(statementRules.getOpeningYearBalance()));
+                    }
+                    if (updateParams == 2 || updateParams == 3) {
+                        balanceSheet.setCurrentBalance(balanceSheet.getCurrentBalance().subtract(statementRules.getClosingBalance()));
+                    }
                 }
             }
         }
@@ -545,7 +559,7 @@ public class StatementBalanceSheetServiceImpl implements StatementBalanceSheetSe
                 initialSum = initialSum.add(
                         child.getInitialBalance() != null ? child.getInitialBalance() : BigDecimal.ZERO
                 );
-            } else if (StatementSymbolEnum.MINUS.getValue().equals(child.getSymbol())){
+            } else if (StatementSymbolEnum.MINUS.getValue().equals(child.getSymbol())) {
                 currentSum = currentSum.subtract(
                         child.getCurrentBalance() != null ? child.getCurrentBalance() : BigDecimal.ZERO
                 );
@@ -562,14 +576,21 @@ public class StatementBalanceSheetServiceImpl implements StatementBalanceSheetSe
 
     @Override
     public void updateRuleBalance(StatementSubjectBalance subjectBalance, StatementRules statementRules) {
-        if (subjectBalance != null) {
-            statementRules.setOpeningYearBalance(subjectBalance.getOpeningYearBalanceDebit()
-                    .subtract(subjectBalance.getOpeningYearBalanceCredit()));
-            statementRules.setClosingBalance(subjectBalance.getBalance());
-        } else {
+        if (statementRules != null && statementRules.getOpeningYearBalance() == null) {
             statementRules.setOpeningYearBalance(BigDecimal.ZERO);
+        }
+        if (statementRules != null && statementRules.getClosingBalance() == null) {
             statementRules.setClosingBalance(BigDecimal.ZERO);
         }
+
+        if (subjectBalance != null && statementRules != null) {
+            statementRules.setOpeningYearBalance(
+                    statementRules.getOpeningYearBalance().add(
+                            subjectBalance.getOpeningYearBalanceDebit()
+                                    .subtract(subjectBalance.getOpeningYearBalanceCredit()))
+            );
+            statementRules.setClosingBalance(statementRules.getClosingBalance().add(subjectBalance.getBalance()));
+        }
     }
-   
+
 }
