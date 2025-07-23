@@ -17,17 +17,17 @@
               show-word-limit
               placeholder="请输入规则描述"
           ></el-input>
-        </el-form-item>
-        <el-form-item prop="status" :label="$t('jbx.text.status.status')">
-          <el-switch
-              :width="44"
-              v-model="form.status"
-              :active-value="1"
-              :inactive-value="0"
-              active-icon-class="el-icon-close"
-              inactive-icon-class="el-icon-check">
-          </el-switch>
-        </el-form-item>
+        </el-form-item><el-form-item prop="status" :label="$t('jbx.text.status.status')">
+        <el-switch
+            :width="44"
+            v-model="form.status"
+            :active-value="1"
+            :inactive-value="0"
+            active-icon-class="el-icon-close"
+            inactive-icon-class="el-icon-check">
+        </el-switch>
+      </el-form-item>
+
       </el-form>
 
       <!-- 公式构建区 -->
