@@ -87,7 +87,7 @@
         </el-table-column>
         <el-table-column prop="direction" :label="t('subjectBalanceDirection')" align="center" min-width="50">
           <template #default="scope">
-            <el-tag type="warning" v-if="scope.row.direction == 0">{{ t('subjectDirectionNone') }}</el-tag>
+            <el-tag type="warning" v-if="scope.row.direction == 0">{{ t('subjectDirectimonNone') }}</el-tag>
             <el-tag type="warning" v-if="scope.row.direction == 1">{{ t('subjectDebit') }}</el-tag>
             <el-tag type="success" v-if="scope.row.direction == 2">{{ t('subjectCredit') }}</el-tag>
           </template>
