@@ -293,7 +293,7 @@ function submit() {
 
   saveSelectItem(dataDto).then((response: any) => {
     if (response.code === 0) {
-      modal.msgSuccess("新增成功");
+      modal.msgSuccess("操作成功");
     } else {
       modal.msgError(response.message);
     }

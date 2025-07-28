@@ -35,3 +35,11 @@ ADD COLUMN `salary_voucher_id` varchar(45) DEFAULT NULL COMMENT '发放凭证编
 ALTER TABLE `jinbooks`.`jbx_voucher_item`
 MODIFY COLUMN `subject_balance` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT '科目余额';
 
+ALTER TABLE jbx_statement_subject_balance
+DROP COLUMN prev_balance,
+DROP COLUMN prev_closing_balance_debit,
+DROP COLUMN prev_closing_balance_credit,
+DROP COLUMN prev_year_to_date_debit,
+DROP COLUMN prev_year_to_date_credit;
+
+
