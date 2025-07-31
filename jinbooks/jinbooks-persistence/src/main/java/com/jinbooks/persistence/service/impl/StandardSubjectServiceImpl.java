@@ -148,6 +148,7 @@ public class StandardSubjectServiceImpl extends ServiceImpl<StandardSubjectMappe
         for(StandardSubject subject : subjectList) {
        	 if(subject.getCode().length() == 4) {
        		 subject.setDisplayName(subject.getName());
+       		 subject.setPinyinCode(StrUtils.getPinYinShort(subject.getName()));
        		 subject.setPinyinDisplayCode(subject.getPinyinCode());
        	 }
         }
@@ -159,9 +160,11 @@ public class StandardSubjectServiceImpl extends ServiceImpl<StandardSubjectMappe
        		 if(parentSubject != null) {
        			 subject.setParentId(parentSubject.getId());
        			 subject.setDisplayName(parentSubject.getDisplayName()+"_"+subject.getName());
+       			 subject.setPinyinCode(StrUtils.getPinYinShort(subject.getName()));
        			 subject.setPinyinDisplayCode(parentSubject.getPinyinDisplayCode()+"_"+ subject.getPinyinCode());
        		 }else {
        			 subject.setDisplayName(subject.getName());
+       			 subject.setPinyinCode(StrUtils.getPinYinShort(subject.getName()));
        			 subject.setPinyinDisplayCode(subject.getPinyinCode());
        		 }
        	 }
@@ -174,9 +177,11 @@ public class StandardSubjectServiceImpl extends ServiceImpl<StandardSubjectMappe
        		 if(parentSubject != null) {
        			 subject.setParentId(parentSubject.getId());
        			 subject.setDisplayName(parentSubject.getDisplayName()+"_"+subject.getName());
+       			 subject.setPinyinCode(StrUtils.getPinYinShort(subject.getName()));
        			 subject.setPinyinDisplayCode(parentSubject.getPinyinDisplayCode()+"_"+ subject.getPinyinCode());
        		 }else {
        			 subject.setDisplayName(subject.getName());
+       			 subject.setPinyinCode(StrUtils.getPinYinShort(subject.getName()));
        			 subject.setPinyinDisplayCode(subject.getPinyinCode());
        		 }
        	 }
@@ -189,9 +194,11 @@ public class StandardSubjectServiceImpl extends ServiceImpl<StandardSubjectMappe
        		 if(parentSubject != null) {
        			 subject.setParentId(parentSubject.getId());
        			 subject.setDisplayName(parentSubject.getDisplayName()+"_"+subject.getName());
+       			 subject.setPinyinCode(StrUtils.getPinYinShort(subject.getName()));
        			 subject.setPinyinDisplayCode(parentSubject.getPinyinDisplayCode()+"_"+ subject.getPinyinCode());
        		 }else {
        			 subject.setDisplayName(subject.getName());
+       			 subject.setPinyinCode(StrUtils.getPinYinShort(subject.getName()));
        			 subject.setPinyinDisplayCode(subject.getPinyinCode());
        		 }
        	 }

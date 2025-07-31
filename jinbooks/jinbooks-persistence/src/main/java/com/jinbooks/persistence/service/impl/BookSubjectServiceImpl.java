@@ -569,6 +569,7 @@ public class BookSubjectServiceImpl extends ServiceImpl<BookSubjectMapper, BookS
             if (subject.getCode().length() == 4) {
             	subject.setIdPath("/"+subject.getId());
                 subject.setDisplayName(subject.getName());
+                subject.setPinyinCode(StrUtils.getPinYinShort(subject.getName()));
                 subject.setPinyinDisplayCode(subject.getPinyinCode());
             }
         }
@@ -581,9 +582,11 @@ public class BookSubjectServiceImpl extends ServiceImpl<BookSubjectMapper, BookS
                     subject.setParentId(parentSubject.getId());
                     subject.setIdPath(parentSubject.getIdPath()+"/"+subject.getId());
                     subject.setDisplayName(parentSubject.getDisplayName() + "_" + subject.getName());
+                    subject.setPinyinCode(StrUtils.getPinYinShort(subject.getName()));
                     subject.setPinyinDisplayCode(parentSubject.getPinyinDisplayCode() + "_" + subject.getPinyinCode());
                 } else {
                     subject.setDisplayName(subject.getName());
+                    subject.setPinyinCode(StrUtils.getPinYinShort(subject.getName()));
                     subject.setPinyinDisplayCode(subject.getPinyinCode());
                 }
             }
@@ -597,9 +600,11 @@ public class BookSubjectServiceImpl extends ServiceImpl<BookSubjectMapper, BookS
                     subject.setParentId(parentSubject.getId());
                     subject.setIdPath(parentSubject.getIdPath()+"/"+subject.getId());
                     subject.setDisplayName(parentSubject.getDisplayName() + "_" + subject.getName());
+                    subject.setPinyinCode(StrUtils.getPinYinShort(subject.getName()));
                     subject.setPinyinDisplayCode(parentSubject.getPinyinDisplayCode() + "_" + subject.getPinyinCode());
                 } else {
                     subject.setDisplayName(subject.getName());
+                    subject.setPinyinCode(StrUtils.getPinYinShort(subject.getName()));
                     subject.setPinyinDisplayCode(subject.getPinyinCode());
                 }
             }
@@ -613,9 +618,11 @@ public class BookSubjectServiceImpl extends ServiceImpl<BookSubjectMapper, BookS
                     subject.setParentId(parentSubject.getId());
                     subject.setIdPath(parentSubject.getIdPath()+"/"+subject.getId());
                     subject.setDisplayName(parentSubject.getDisplayName() + "_" + subject.getName());
+                    subject.setPinyinCode(StrUtils.getPinYinShort(subject.getName()));
                     subject.setPinyinDisplayCode(parentSubject.getPinyinDisplayCode() + "_" + subject.getPinyinCode());
                 } else {
                     subject.setDisplayName(subject.getName());
+                    subject.setPinyinCode(StrUtils.getPinYinShort(subject.getName()));
                     subject.setPinyinDisplayCode(subject.getPinyinCode());
                 }
             }
