@@ -1,10 +1,6 @@
 <template>
-  <el-drawer v-model="dialogStatus" :close-on-click-modal="false" size="80%"
-             @close="dialogOfClosedMethods(false)">
-    <template #header>
-      <h4>{{ title }}</h4>
-    </template>
-    <template #default>
+  <div class="app-container">
+    <el-card class="common-card query-box">
       <div class="queryForm">
         <el-form :model="queryParams" ref="queryRef" :inline="true"
                  @submit.native.prevent>
@@ -47,6 +43,8 @@
           </el-form-item>
         </el-form>
       </div>
+      </el-card>
+      <el-card class="common-card">
       <div class="button-top">
         <el-button
             @click="handleAdd"
@@ -87,7 +85,7 @@
         </el-table-column>
         <el-table-column prop="direction" :label="t('subjectBalanceDirection')" align="center" min-width="50">
           <template #default="scope">
-            <el-tag type="warning" v-if="scope.row.direction == 0">{{ t('subjectDirectimonNone') }}</el-tag>
+            <el-tag type="warning" v-if="scope.row.direction == 0">{{ t('subjectDirectionNone') }}</el-tag>
             <el-tag type="warning" v-if="scope.row.direction == 1">{{ t('subjectDebit') }}</el-tag>
             <el-tag type="success" v-if="scope.row.direction == 2">{{ t('subjectCredit') }}</el-tag>
           </template>
@@ -127,6 +125,7 @@
           </template>
         </el-table-column>
       </el-table>
+       </el-card>
       <!--      <pagination-->
       <!--          v-show="total > 0"-->
       <!--          :total="total"-->
@@ -240,13 +239,7 @@
           </div>
         </template>
       </el-drawer>
-    </template>
-    <template #footer>
-      <div style="flex: auto">
-        <el-button @click="dialogOfClosedMethods(false)">{{ t('org.cancel') }}</el-button>
-      </div>
-    </template>
-  </el-drawer>
+  </div>
 </template>
 <script setup lang="ts">
 import modal from "@/plugins/modal";
@@ -267,9 +260,12 @@ import {
   reorgDisplayName
 } from "@/api/system/book/book-subject";
 import {handleTree} from "@/utils/Jinbooks";
+import bookStore from "@/store/modules/bookStore";
 import Template from "@/views/hr/salary-voucher-rules/template.vue";
 
 const {t} = useI18n()
+
+const currBookStore = bookStore()
 
 const {proxy} = getCurrentInstance()!;
 
@@ -286,22 +282,6 @@ let subjects_category_dicts = reactive(subjects_auxiliary.value.map((t: any) => 
 const emit: any = defineEmits(['hatsDrawerClose'])
 
 const formRef = ref<InstanceType<typeof ElForm> | null>(null);
-
-const props: any = defineProps({
-      title: {
-        type: String,
-        default: ""
-      },
-      open: {
-        type: Boolean,
-        default: false
-      },
-      formId: {
-        type: String,
-        default: undefined
-      },
-    }
-)
 
 const data: any = reactive({
   queryParams: {
@@ -345,21 +325,7 @@ const defaultProps: any = ref({
   disabled: disabledFilter
 })
 
-// 监听 open 变化
-watch(
-    () => props.open,
-    (val: any) => {
-      if (val && props.formId) {
-        dialogStatus.value = props.open;
-        queryParams.value.bookId = props.formId;
-        getList();
-        getSetTree();
-      } else {
-        reset();
-      }
-    },
-    {immediate: true}
-);
+queryParams.value.bookId = currBookStore.bookId;
 
 function dialogOfClosedMethods(val: any): any {
   dialogStatus.value = false;
@@ -391,7 +357,7 @@ function handleAdd(): any {
   form.value = {
     direction: "1",
     status: 1,
-    bookId: props.formId,
+    bookId: currBookStore.bookId,
     auxiliary: [],
     isCash: 0
   };
@@ -400,7 +366,7 @@ function handleAdd(): any {
 }
 
 function getOneSetSubject() {
-  getSetSubject({id: id.value, bookId: props.formId}).then((res: any) => {
+  getSetSubject({id: id.value, bookId: currBookStore.bookId}).then((res: any) => {
     try {
       res.data.auxiliary = res.data.auxiliary ? JSON.parse(res.data.auxiliary) : [];
       res.data.auxiliary.forEach((t: any) => {
@@ -415,13 +381,13 @@ function getOneSetSubject() {
     }
 
     form.value = res.data;
-    form.value.bookId = props.formId;
+    form.value.bookId = currBookStore.bookId;
   })
 }
 
 function onDelete(row: any): any {
   modal.confirm("是否确认删除名称为\"" + row.name + "\"的会计科目?").then(function () {
-    return deleteBatch({listIds: [row.id], bookId: props.formId});
+    return deleteBatch({listIds: [row.id], bookId: currBookStore.bookId});
   }).then((res: any) => {
     if (res.code === 0) {
       getList();
@@ -436,7 +402,7 @@ function onDelete(row: any): any {
 /** 多选删除操作*/
 function handleRemove(): any {
   modal.confirm("是否确认删除这些数据？").then(function () {
-    return deleteBatch({listIds: ids.value, bookId: props.formId});
+    return deleteBatch({listIds: ids.value, bookId: currBookStore.bookId});
   }).then((res: any) => {
     if (res.code === 0) {
       handleQuery();
@@ -497,17 +463,17 @@ interface TreeNode {
 }
 
 function getSetTree() {
-  getTree({bookId: props.formId}).then((response: { data: TreeNode[] }) => {
+  getTree({bookId: currBookStore.bookId}).then((response: { data: TreeNode[] }) => {
     deptOptions.value = response.data;
     form.value.parentId = undefined;
   });
 }
 
 function disabledFilter(data: any, node: any): any {
-  if (!props.formId) {
+  if (!currBookStore.bookId) {
     return false;
   }
-  return new RegExp(`/${props.formId}(/|$)`).test(data.idPath)
+  return new RegExp(`/${currBookStore.bookId}(/|$)`).test(data.idPath)
 }
 
 function handleUpdate(row: any): any {
@@ -533,10 +499,10 @@ function submitForm(): any {
   formRef?.value?.validate((valid: any) => {
     if (valid) {
       const operation: any = id.value ? updateSubject : saveSubject;
-      const successMessage: any = props.formId
+      const successMessage: any = currBookStore.bookId
           ? t('org.success.update')
           : t('org.success.add');
-      const formData = {...form.value, bookId: props.formId}
+      const formData = {...form.value, bookId: currBookStore.bookId}
       formData.auxiliary = formData.auxiliary && formData.auxiliary instanceof Array
           ? JSON.stringify(formData.auxiliary) : '[]';
       operation(formData).then((res: any) => handleResponse(res, successMessage));
@@ -567,6 +533,10 @@ function handle_subjects_category_dicts(item: any) {
     auxiliary.push(item)
   }
 }
+
+  
+  getList();
+  getSetTree();
 
 </script>
 

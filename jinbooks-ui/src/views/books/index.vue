@@ -73,11 +73,6 @@
             <el-tooltip content="编辑">
               <el-button link icon="Edit" @click="handleUpdate(scope.row)"></el-button>
             </el-tooltip>
-            <el-tooltip content="关联会计科目">
-              <el-button plain type="text" @click="showSubjects(scope.row)">
-                <svg-icon icon-class="menus-huijikemu" size="0.9em"></svg-icon>
-              </el-button>
-            </el-tooltip>
             <el-tooltip content="移除">
               <el-button link icon="Delete" type="danger" @click="handleDelete(scope.row)"></el-button>
             </el-tooltip>
@@ -99,8 +94,7 @@
                :vat_types="books_vat_type"
                :books_industry="books_industry"
                @dialogOfClosedMethods="dialogOfClosedMethods"></edit-form>
-    <!--会计科目-->
-    <subjects-related :title="title" :form-id="id" :open="subjectOpen" @hatsDrawerClose="dialogOfClosedMethods"/>
+
   </div>
 </template>
 
@@ -108,7 +102,6 @@
 import {useI18n} from "vue-i18n";
 import {getCurrentInstance, reactive, ref, toRefs} from "vue";
 import editForm from "./edit.vue";
-import subjectsRelated from "./subject-relate.vue";
 import modal from "@/plugins/modal";
 import DictTagNumber from "@/components/DIctTagNumber/index.vue";
 import {listBooksSets, deleteBatch} from "@/api/system/book/book";
