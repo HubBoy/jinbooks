@@ -1,5 +1,5 @@
 <p align="center" >
-    <img src="images/logo.png?raw=true"  width="200px"   alt=""/>
+    <img src="images/logo.png?raw=true"  width="150px"   alt=""/>
 </p>
 <p align="center">
   <strong>JinBooks-功能齐全的财务记账系统，告别Excel手工记账</strong>
