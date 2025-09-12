@@ -1,3 +1,10 @@
+<p align="center" >
+    <img src="images/logo.png?raw=true"  width="200px"   alt=""/>
+</p>
+<p align="center">
+  <strong>JinBooks-功能齐全的财务记账系统，告别Excel手工记账</strong>
+</p>  
+
 # 概述
 
 <b>JinBooks</b>财务记账系统，告别Excel手工记账，覆盖财务记账的整个生命周期、功能齐全、实现记账无纸化办公，满足中小企业日常财务记账需求。财务人员录入凭证、日记账、员工管理等；月末自动结转；结账后自动生成资产负债表、利润表、现金流量表、科目余额表等；仪表盘统计让企业管理者对企业财务状况一览无余。
