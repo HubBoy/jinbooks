@@ -50,7 +50,7 @@
 
 ### 报表
 #### 科目余额表
-<img src="https://gitee.com/jinbooks/jinbooks/raw/main/images/jinbooks_kemu.png?raw=true"/>
+<img src="https://gitee.com/jinbooks/jinbooks/raw/main/images/jinbooks_rpt_kmey.png?raw=true"/>
 
 #### 资产负债表
 <img src="https://gitee.com/jinbooks/jinbooks/raw/main/images/jinbooks_rpt_zcfz.png?raw=true"/>

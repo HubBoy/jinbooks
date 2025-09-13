@@ -57,7 +57,7 @@ npm run build
 ## 目录结构说明
 
 ```
-jinbooks-web-fronted/
+jinbooks-ui/
 ├── public/               # 静态资源
 ├── src/                  # 源代码
 │   ├── assets/           # 资源文件
