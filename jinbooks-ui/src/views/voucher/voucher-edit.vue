@@ -149,7 +149,7 @@
                     <template #default>
                       <div>
                         <select-auxiliary
-                            v-if="auxiliaryVisible[scope.$index]"
+                            :show="auxiliaryVisible[scope.$index]"
                             :subjectId="scope.row.subjectId"
                             :auxiliary="subjectKeyItem[scope.row.subjectCode]?.auxiliary"
                             v-model="scope.row.auxiliary"></select-auxiliary>
@@ -292,6 +292,8 @@ interface RecordingVoucher {
   creditAmount: number | string,
   subjectBalance: number | undefined,
   auxiliary: Array<any>,
+  editing: boolean,
+  columnIndex: number,
 }
 
 interface SpanMethodProps {
@@ -461,6 +463,8 @@ const shortcuts = [
 // 凭证明细数据-列表展示
 const tableSumData = ref<RecordingVoucher[]>([]);
 const countRow = ref<RecordingVoucher>({
+  columnIndex: 0,
+  editing: false,
   id: -1,
   summary: `合  计`,
   subjectId: '',
@@ -469,7 +473,7 @@ const countRow = ref<RecordingVoucher>({
   debitAmount: 0,
   creditAmount: 0,
   subjectBalance: undefined,
-  auxiliary: [],
+  auxiliary: []
 });
 const formData = ref<any>({...props.modelValue})
 const isPrintMode = computed(() => {
@@ -1065,6 +1069,7 @@ const handleAuxiliaryShow = (scope: any) => {
   } else {
     auxiliaryVisible.value[scope.$index] = false
   }
+  auxiliaryVisible.value = [...auxiliaryVisible.value]; // 触发响应式
 }
 
 function handleWordHead(v: any) {

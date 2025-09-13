@@ -39,6 +39,7 @@ const setFirstSelectRef = (el: any) => {
 }
 
 const props = defineProps({
+  show: {type: Boolean, default: false},
   subjectId: {type: String, default: ''},
   auxiliary: {type: Array<any>, default: []},
   modelValue: {type: Array<any>, default: []},
@@ -135,6 +136,10 @@ function watchUpdate(newVal: any) {
   }
 }
 
+function syncValues(newVal: any[]) {
+  watchUpdate(props.auxiliary)
+}
+
 watch(
     () => props.auxiliary,
     (newVal: Array<any>) => {
@@ -145,6 +150,26 @@ watch(
     {immediate: true}
 )
 
+watch(
+    () => props.show,
+    (newVal: Boolean) => {
+      // 首次挂载后也可以聚焦
+      nextTick(() => {
+        firstSelectRef.value?.focus()
+      })
+    },
+    {immediate: true, deep: true}
+)
+
+watch(
+    () => props.modelValue,
+    (newVal) => {
+      if (newVal && newVal.length) {
+        syncValues(newVal);
+      }
+    },
+    {immediate: true, deep: true}
+);
 onMounted(() => {
   values.value = {}
   props.modelValue.forEach((t: any) => {
