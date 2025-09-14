@@ -1,5 +1,5 @@
 <template>
-  <div class="app-container" @click="closeEditAll">
+  <div class="app-container" @keydown="handleKeydown">
     <!--  功能区左侧  -->
     <div v-if="!isPrintMode" class="top-funs top-funs-left" :class="{topFunsUpdate: !!formData.id && props.dialog}">
       <span class="bottom-counts-item" :class="{isNotPh: !loanBalance()}">
@@ -32,6 +32,7 @@
       </el-button>
     </div>
     <div ref="printMe" class="printable-content" id="printable-content"
+         @click="closeEditAll"
          :style="{margin: !isPrintMode ? '65px 0 0 0' : '0 auto', width: isPrintMode ? '980px' : '100%'}">
       <!--   标题头   -->
       <div class="header-title">
@@ -111,38 +112,48 @@
                     class="rv-table">
             <el-table-column prop="summary" align="left" header-align="center" label="摘要">
               <template #default="scope">
-                <span v-if="!scope.row.editing || scope.row.columnIndex !== 0">{{ scope.row.summary }}</span>
-                <el-input v-else v-model="scope.row.summary"></el-input>
+                <span v-if="!scope.row.editing">{{ scope.row.summary }}</span>
+                <el-input v-else v-model="scope.row.summary"
+                          @keydown="handleInputKeydown($event, scope, 0)"
+                          :ref="(el) => setRef(el, `input-${scope.$index}-0`)"></el-input>
               </template>
             </el-table-column>
             <el-table-column align="left" header-align="center" label="会计科目">
               <el-table-column prop="subjectId" align="left" header-align="center" label="科目">
                 <template #default="scope">
-                  <div v-if="!scope.row.editing || scope.row.columnIndex !== 1" v-html="getSubjectName(scope)"></div>
+                  <div v-if="!scope.row.editing" v-html="getSubjectName(scope)"></div>
                   <el-cascader v-else style="width: 100%" filterable
                                v-model="scope.row.subjectCode"
                                :options="subjectList"
                                :props="cascaderSubjectProps"
                                @change="handleSubjectChange(scope, $event)"
+                               @keydown="handleCascaderKeydown($event, scope, 1)"
+                               :ref="(el) => setRef(el, `cascader-${scope.$index}-1`)"
                                :filter-method="cascaderSubjectProps.filterMethod"/>
+
                 </template>
               </el-table-column>
               <el-table-column prop="auxiliary" align="left" header-align="center" label="辅助核算">
                 <template #default="scope">
-                  <span v-if="!scope.row.editing || scope.row.columnIndex !== 2">{{
-                      getSubjectDetailName(scope)
-                    }}</span>
+                  <span v-if="!scope.row.editing">
+                    {{ getSubjectDetailName(scope) }}
+                  </span>
                   <el-popover v-else title="辅助核算" :width="400" trigger="click"
                               :visible="auxiliaryVisible[scope.$index]">
                     <template #reference>
                       <el-input readonly autosize type="textarea" :value="getSubjectDetailName(scope)"
-                                @click="handleAuxiliaryShow(scope)"></el-input>
+                                @click="handleAuxiliaryShow(scope)"
+                                @keydown="handleInputKeydown($event, scope, 2)"
+                                :ref="(el) => setRef(el, `input-${scope.$index}-2`)"></el-input>
                     </template>
                     <template #default>
-                      <select-auxiliary
-                          :subjectId="scope.row.subjectId"
-                          :auxiliary="subjectKeyItem[scope.row.subjectCode]?.auxiliary"
-                          v-model="scope.row.auxiliary"></select-auxiliary>
+                      <div>
+                        <select-auxiliary
+                            :show="auxiliaryVisible[scope.$index]"
+                            :subjectId="scope.row.subjectId"
+                            :auxiliary="subjectKeyItem[scope.row.subjectCode]?.auxiliary"
+                            v-model="scope.row.auxiliary"></select-auxiliary>
+                      </div>
                     </template>
                   </el-popover>
                 </template>
@@ -150,24 +161,29 @@
             </el-table-column>
             <el-table-column prop="debitAmount" align="right" header-align="center" label="借方金额">
               <template #default="scope">
-                <span v-if="!scope.row.editing || scope.row.columnIndex !== 3" :class="{redWord:isRedWord(scope.row.debitAmount)}">
+                <span v-if="!scope.row.editing"
+                      :class="{redWord:isRedWord(scope.row.debitAmount)}">
                   {{ formatAmountRed(scope.row.debitAmount) }}
                 </span>
                 <el-input v-else v-model="scope.row.debitAmount"
                           @change="createTableData(scope.row, 1)"
                           :formatter="(value:any) => `￥ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')"
-                          :parser="(value:any) => value.replace(/￥\s?|(,*)/g, '')"></el-input>
+                          :parser="(value:any) => value.replace(/￥\s?|(,*)/g, '')"
+                          @keydown="handleInputKeydown($event, scope, 3)"
+                          :ref="(el) => setRef(el, `input-${scope.$index}-3`)"></el-input>
               </template>
             </el-table-column>
             <el-table-column prop="creditAmount" align="right" header-align="center" label="贷方金额">
               <template #default="scope">
-                <span v-if="!scope.row.editing || scope.row.columnIndex !== 4">
+                <span v-if="!scope.row.editing">
                   {{ formatAmountRed(scope.row.creditAmount) }}
                 </span>
                 <el-input v-else v-model="scope.row.creditAmount"
                           @change="createTableData(scope.row, 2)"
                           :formatter="(value:any) => `￥ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')"
-                          :parser="(value:any) => value.replace(/￥\s?|(,*)/g, '')"></el-input>
+                          :parser="(value:any) => value.replace(/￥\s?|(,*)/g, '')"
+                          @keydown="handleInputKeydown($event, scope, 4)"
+                          :ref="(el) => setRef(el, `input-${scope.$index}-4`)"></el-input>
               </template>
             </el-table-column>
             <el-table-column prop="index" align="center" width="60">
@@ -267,7 +283,7 @@ import bookStore from "@/store/modules/bookStore";
 import Decimal from 'decimal.js'
 
 interface RecordingVoucher {
-  id: number | string,
+  id: any,
   summary: string,
   subjectId: string,
   detailedSubjectCode: string,
@@ -276,6 +292,8 @@ interface RecordingVoucher {
   creditAmount: number | string,
   subjectBalance: number | undefined,
   auxiliary: Array<any>,
+  editing: boolean,
+  columnIndex: number,
 }
 
 interface SpanMethodProps {
@@ -331,6 +349,7 @@ const props: any = defineProps({
     },
   }
 })
+
 const auxiliaryVisible = ref<Array<boolean>>([])
 const route: any = useRoute()
 // 定义回调接口，提交按钮触发
@@ -444,6 +463,8 @@ const shortcuts = [
 // 凭证明细数据-列表展示
 const tableSumData = ref<RecordingVoucher[]>([]);
 const countRow = ref<RecordingVoucher>({
+  columnIndex: 0,
+  editing: false,
   id: -1,
   summary: `合  计`,
   subjectId: '',
@@ -452,14 +473,14 @@ const countRow = ref<RecordingVoucher>({
   debitAmount: 0,
   creditAmount: 0,
   subjectBalance: undefined,
-  auxiliary: [],
+  auxiliary: []
 });
 const formData = ref<any>({...props.modelValue})
 const isPrintMode = computed(() => {
   return route.query.mode === 'print' || !props.edit
 })
 const cascaderSubjectProps = {
-  expandTrigger: 'hover',
+  expandTrigger: 'click',
   label: 'name',
   value: 'code',
   children: 'children',
@@ -478,6 +499,36 @@ const cascaderSubjectProps = {
 }
 // 创建一个响应式的对象来存储 refs
 const refs = reactive<{ [key: string]: any }>({});
+
+// 创建一个响应式的对象来存储 refs
+const setRef = (el: any, key: string) => {
+  if (el) {
+    refs[key] = el;
+    // 当元素被设置时，如果它应该被聚焦，则聚焦它
+    if (shouldFocusRef(key)) {
+      setTimeout(() => {
+        focusRefElement(el);
+      }, 0);
+    }
+  }
+};
+// 存储应该聚焦的元素的 key
+const focusedRefKey = ref('');
+// 判断是否应该聚焦某个 ref 元素
+const shouldFocusRef = (key: string) => {
+  return key === focusedRefKey.value;
+};
+// 聚焦到 ref 元素
+const focusRefElement = (el: any) => {
+  if (el && el.focus) {
+    el.focus();
+  } else if (el && el.$el && el.$el.focus) {
+    el.$el.focus();
+  } else if (el && el.$refs && el.$refs.input && el.$refs.input.focus) {
+    el.$refs.input.focus();
+  }
+};
+
 // 新增一项
 const onAddItem = () => {
   formData.value.items.push({
@@ -670,14 +721,14 @@ const formatAmount = (value: any) => {
 
 const formatAmountRed = (value: any) => {
   if (!value && value !== 0) return '';
-  if(new Decimal(value).lt(0)){
-    value = new Decimal(0).minus(new Decimal(value)) 
+  if (new Decimal(value).lt(0)) {
+    value = new Decimal(0).minus(new Decimal(value))
   }
   return formatAmount(value)
 }
 
 const isRedWord = (value: any) => {
-  if (!value ||value=="") {
+  if (!value || value == "") {
     return false;
   }
   return new Decimal(value).lt(0);
@@ -702,12 +753,17 @@ const rowClick = (row: any, column: any, event: Event) => {
   } else {
     onAddItem()
   }
+  // 设置焦点
+  const rowIndex = tableSumData.value.indexOf(row);
+  if (rowIndex >= 0) {
+    focusedRefKey.value = getColumnRefKey(rowIndex, row.columnIndex || 0);
+  }
   event.stopPropagation()
 }
 
 const cellClick = (row: any, column: any, cell: HTMLTableCellElement, event: Event) => {
-  rowClick(row, column, event)
   row.columnIndex = column.index
+  rowClick(row, column, event)
   console.log(column, row.columnIndex)
 }
 
@@ -911,7 +967,7 @@ const onSubmit = () => {
             validRes = false
             return false;
           }
-          
+
           if (!item.summary) {
             ElMessage.error(`第${index + 1}项没有输入摘要`)
             validRes = false
@@ -971,7 +1027,7 @@ const handleSubjectChange = (scope: any, value: any) => {
 
   createTableData()
   auxiliaryVisible.value[scope.$index] = false
-  handleAuxiliaryShow(scope)
+  // handleAuxiliaryShow(scope)
 }
 
 function getSubjectName(scope: any) {
@@ -1013,6 +1069,7 @@ const handleAuxiliaryShow = (scope: any) => {
   } else {
     auxiliaryVisible.value[scope.$index] = false
   }
+  auxiliaryVisible.value = [...auxiliaryVisible.value]; // 触发响应式
 }
 
 function handleWordHead(v: any) {
@@ -1036,6 +1093,156 @@ function handleVoucherDate(v: any) {
   //       formData.value.wordNum = res.data
   //     })
 }
+
+
+// ******************键盘监听支持 开始******************
+const handleKeydown = (event: KeyboardEvent) => {
+  if (event.key !== 'Tab') return;
+
+  const acData = tableSumData.value.filter((t: any) => {
+    return t.editing
+  })
+  if (acData.length > 0) {
+    const refName = getColumnRefKey(acData[0].index, 0)
+    const activeEl = document.activeElement as HTMLElement;
+    const isInputOrTextarea = activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA';
+    if (!isInputOrTextarea) {
+      refs[refName].$el.click()
+    }
+    // console.log('存在激活项', refName, refs[refName], activeEl)
+    return
+  }
+};
+// 处理 input 元素的键盘事件
+const handleInputKeydown = (event: KeyboardEvent, scope: any, columnIndex: number) => {
+  const key = event.key;
+  if (key === 'Tab' || (key === 'Enter' && columnIndex !== 2 && columnIndex !== 1)) {
+    event.preventDefault();
+    console.log('key', key, columnIndex, scope)
+
+    // 阻止默认行为
+    if (event.shiftKey && key === 'Tab') {
+      // Shift + Tab 向前移动
+      moveToPreviousCell(scope, columnIndex);
+    } else if (key === 'Tab' || key === 'Enter') {
+      // Tab 或 Enter 向后移动
+      moveToNextCell(scope, columnIndex);
+    }
+    if (focusedRefKey.value.indexOf('cascader') > -1) {
+      refs[focusedRefKey.value].togglePopperVisible(true)
+    }
+  } else if (key === 'Enter' && columnIndex === 2) {
+    event.preventDefault();
+    handleAuxiliaryShow(scope)
+  }
+};
+
+// 处理 cascader 组件的键盘事件
+const handleCascaderKeydown = (event: KeyboardEvent, scope: any, columnIndex: number) => {
+  const key = event.key;
+  if (key === 'Tab') {
+    event.preventDefault();
+    console.log('key', key, columnIndex, scope)
+
+    if (event.shiftKey && key === 'Tab') {
+      // Shift + Tab 向前移动
+      moveToPreviousCell(scope, columnIndex);
+    } else if (key === 'Tab' || key === 'Enter') {
+      // Tab 或 Enter 向后移动
+      moveToNextCell(scope, columnIndex);
+    }
+  }
+};
+
+const moveToNextCell = (scope: any, columnIndex: number) => {
+  const row = scope.row;
+  const rowIndex = tableSumData.value.indexOf(row);
+
+  // 关闭当前编辑状态
+  closeEditAll();
+
+  // 如果当前是最后一列（贷方金额），则移动到下一行的第一列（摘要）
+  if (columnIndex === 4) {
+    // 移动到下一行
+    if (rowIndex < tableSumData.value.length - 2) { // 不包括合计行
+      const nextRow = tableSumData.value[rowIndex + 1];
+      nextRow.editing = true;
+      nextRow.columnIndex = 0;
+      if (nextRow.id <= 0) {
+        onAddItem()
+      }
+      // 设置焦点 key
+      focusedRefKey.value = `input-${rowIndex + 1}-0`;
+      // 确保数据同步
+      const itemIndex = formData.value.items.indexOf(row);
+      if (itemIndex !== -1 && itemIndex + 1 < formData.value.items.length) {
+        formData.value.items[itemIndex + 1].editing = true;
+        formData.value.items[itemIndex + 1].columnIndex = 0;
+      }
+    } else {
+      onAddItem()
+      moveToNextCell(scope, columnIndex)
+    }
+  } else {
+    // 同行移动到下一列
+    row.editing = true;
+    row.columnIndex = columnIndex + 1;
+    focusedRefKey.value = getColumnRefKey(rowIndex, columnIndex + 1);
+
+    // 特殊处理：从科目列(1)到辅助核算列(2)时，需要打开辅助核算
+    if (columnIndex === 1) {
+      setTimeout(() => {
+        handleAuxiliaryShow(scope);
+      }, 0);
+    }
+  }
+};
+
+const moveToPreviousCell = (scope: any, columnIndex: number) => {
+  const row = scope.row;
+  const rowIndexOld = tableSumData.value.indexOf(row);
+
+  // 关闭当前编辑状态
+  closeEditAll();
+
+  // 如果当前是第一列（摘要），则移动到上一行的最后一列（贷方金额）
+  if (columnIndex === 0) {
+    // 移动到上一行
+    let rowIndex = rowIndexOld
+    if (rowIndex === 0) {
+      rowIndex += 1
+    }
+    if (rowIndex > 0) {
+      const prevRow = tableSumData.value[rowIndex - 1];
+      prevRow.editing = true;
+      prevRow.columnIndex = rowIndexOld === 0 ? 0 : 4;
+      focusedRefKey.value = `input-${rowIndex - 1}-${prevRow.columnIndex}`;
+      // 确保数据同步
+      const itemIndex = formData.value.items.indexOf(row);
+      if (itemIndex > 0) {
+        formData.value.items[itemIndex - 1].editing = true;
+        formData.value.items[itemIndex - 1].columnIndex = prevRow.columnIndex;
+      }
+    }
+  } else {
+    // 同行移动到前一列
+    row.editing = true;
+    row.columnIndex = columnIndex - 1;
+    focusedRefKey.value = getColumnRefKey(rowIndexOld, columnIndex - 1);
+  }
+};
+
+// 获取列对应的 ref key
+const getColumnRefKey = (rowIndex: number, columnIndex: number) => {
+  // 根据列索引确定组件类型
+  if (columnIndex === 1) { // 科目列使用 cascader
+    return `cascader-${rowIndex}-1`;
+  } else { // 其他列使用 input
+    return `input-${rowIndex}-${columnIndex}`;
+  }
+};
+
+// ******************键盘监听支持 结束******************
 
 watch(
     () => props.modelValue,
@@ -1123,7 +1330,31 @@ onBeforeUpdate(() => {
   Object.keys(refs).forEach(key => {
     delete refs[key];
   });
+  focusedRefKey.value = '';
 });
+
+// 监听整个页面的焦点变化
+document.addEventListener('focusin', (event: FocusEvent) => {
+  const target = event.target as HTMLElement;
+  const isInputOrTextarea =
+      target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'LI';
+  // console.log('是否是输入区域:', target.tagName, isInputOrTextarea);
+
+  const acData = tableSumData.value.filter((t: any) => {
+    return t.editing
+  })
+  if (acData.length > 0) {
+    const refName = getColumnRefKey(acData[0].index, 0)
+    if (!isInputOrTextarea) {
+      refs[refName].$el.click()
+    }
+  }
+});
+//
+// document.addEventListener('focusout', (event: FocusEvent) => {
+//   const target = event.target as HTMLElement;
+//   console.log('失去焦点的元素:', target);
+// });
 </script>
 
 <style scoped lang="scss">
@@ -1142,7 +1373,7 @@ onBeforeUpdate(() => {
 }
 
 .redWord {
-        color: red;
+  color: red;
 }
 
 .app-container {

@@ -4,17 +4,19 @@
       <!-- 是否禁用 -->
       <el-form-item v-for="(item, index) in auxiliary" :key="item.id"
                     :label="item.label" :prop="item.value">
-        <el-select style="width: 300px" :model-value="itemValue(item).value.map((t: any) => {return t.value})"
-                   multiple :multiple-limit="1" clearable placeholder="请选择"
-                   @remove-tag="handleRemoveTag(item, $event)"
-                   @clear="handleClear(item)">
+        <el-select
+            style="width: 300px"
+            :ref="index === 0 ? setFirstSelectRef : undefined"
+            :model-value="itemValue(item).value.map((t: any) => t.value)"
+            multiple :multiple-limit="1" clearable placeholder="请选择"
+            @remove-tag="handleRemoveTag(item, $event)"
+            @clear="handleClear(item)"
+            @change="val => handleChange(item, val)">
           <el-option v-for="itemOp in listData[item.value]"
+                     :key="itemOp.value"
                      :label="itemOp.label"
                      :value="itemOp.value"
-                     :disabled="itemOp.status === 'y'">
-            <div v-if="itemOp.status === 'y'" style="color: #8c939d">{{ itemOp.label }}</div>
-            <div v-else @click.stop="handleChange(item, itemOp)">{{ itemOp.label }}</div>
-          </el-option>
+                     :disabled="itemOp.status === 'y'"/>
         </el-select>
       </el-form-item>
     </el-form>
@@ -23,32 +25,30 @@
 
 <script setup lang="ts">
 import {listAssistAcc} from "@/api/config/assistAcc";
-import {reactive, ref, toRefs, watch, onMounted, computed} from "vue";
-import {ElForm, FormInstance, ElMessage} from "element-plus";
+import {reactive, ref, toRefs, watch, onMounted, nextTick} from "vue";
+import {ElForm, FormInstance} from "element-plus";
 
 const emit: any = defineEmits(['update:modelValue'])
-const auxiliaryFormRef = ref<FormInstance>();
+const auxiliaryFormRef = ref<FormInstance>()
+const firstSelectRef = ref<any>(null)
+
+const setFirstSelectRef = (el: any) => {
+  if (el) {
+    firstSelectRef.value = el
+  }
+}
 
 const props = defineProps({
-  subjectId: {
-    type: String,
-    default: ''
-  },
-  auxiliary: {
-    type: Array<any>,
-    default: []
-  },
-  modelValue: {
-    type: Array<any>,
-    default: []
-  },
+  show: {type: Boolean, default: false},
+  subjectId: {type: String, default: ''},
+  auxiliary: {type: Array<any>, default: []},
+  modelValue: {type: Array<any>, default: []},
 })
 
 const data: any = reactive({
   form: {},
   rules: {}
 });
-
 const {rules, form} = toRefs(data);
 const {auxiliary, modelValue} = toRefs(props);
 const listData = ref<any>({})
@@ -56,11 +56,7 @@ const values = ref<any>({})
 
 const itemValue = (aux: any) => {
   if (!values.value[aux.value]) {
-    values.value[aux.value] = {
-      id: aux.value,
-      value: [],
-      label: aux.label,
-    }
+    values.value[aux.value] = {id: aux.value, value: [], label: aux.label}
   }
   return values.value[aux.value]
 }
@@ -86,9 +82,7 @@ function getList(t: any, id: number) {
 
 function handleValidate(index: number) {
   auxiliaryFormRef.value?.validate((valid, fields) => {
-    if (valid) {
-
-    } else {
+    if (!valid) {
       console.error(fields, rules.value, values.value)
     }
   });
@@ -109,19 +103,13 @@ function handleRemoveTag(item: any, value: any) {
   handleUpdate()
 }
 
-function handleChange(item: any, value: any) {
-  const idx = itemValue(item).value.findIndex((t: any) => {
-    return t.value === value.value
-  })
-  if (idx > -1) {
-    itemValue(item).value.splice(idx, 1)
-  } else {
-    if (itemValue(item).value.length === 1) {
-      return
-    }
-    itemValue(item).value.push(value)
-  }
-  form.value[item.value] = itemValue(item).value.join(",")
+/** 选中变化 */
+function handleChange(item: any, selectedValues: any[]) {
+  // 根据选中的 value 数组，找到对应的对象
+  itemValue(item).value = listData.value[item.value].filter((op: any) =>
+      selectedValues.includes(op.value)
+  )
+  form.value[item.value] = itemValue(item).value.map((v: any) => v.value).join(",")
   handleUpdate()
 }
 
@@ -133,33 +121,25 @@ function handleUpdate() {
 function watchUpdate(newVal: any) {
   if (newVal) {
     form.value.length = 0
-    newVal.forEach((t: any, index: number) => {
+    newVal.forEach((t: any) => {
       getList(t, t.value)
       const id = t.value
-      if (t.must) {
-        rules.value[id] = [
-          {required: true, message: t.label + '不能为空', trigger: 'change'},
-        ]
-      } else {
-        rules.value[id] = []
-      }
-
+      rules.value[id] = t.must
+          ? [{required: true, message: t.label + '不能为空', trigger: 'change'}]
+          : []
       form.value[id] = ""
     })
-    handleValidate(0)
+    // 等待DOM更新后聚焦第一个select
+    nextTick(() => {
+      firstSelectRef.value?.focus()
+    })
   }
 }
 
-watch(() => props.modelValue, (newVal, oldVal) => {
-  if (newVal) {
-    values.value = {}
-    newVal.forEach((t: any, index: number) => {
-      values.value[t.id] = t
-      form.value[t.id] = t.value ? t.value.join(",") : ''
-    })
-    handleValidate(0)
-  }
-});
+function syncValues(newVal: any[]) {
+  watchUpdate(props.auxiliary)
+}
+
 watch(
     () => props.auxiliary,
     (newVal: Array<any>) => {
@@ -170,10 +150,34 @@ watch(
     {immediate: true}
 )
 
+watch(
+    () => props.show,
+    (newVal: Boolean) => {
+      // 首次挂载后也可以聚焦
+      nextTick(() => {
+        firstSelectRef.value?.focus()
+      })
+    },
+    {immediate: true, deep: true}
+)
+
+watch(
+    () => props.modelValue,
+    (newVal) => {
+      if (newVal && newVal.length) {
+        syncValues(newVal);
+      }
+    },
+    {immediate: true, deep: true}
+);
 onMounted(() => {
   values.value = {}
-  props.modelValue.forEach((t: any, index: number) => {
+  props.modelValue.forEach((t: any) => {
     values.value[t.id] = t
+  })
+  // 首次挂载后也可以聚焦
+  nextTick(() => {
+    firstSelectRef.value?.focus()
   })
 })
 </script>
