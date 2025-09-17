@@ -20,6 +20,7 @@ package com.jinbooks.entity.hr.dto;
 
 import com.jinbooks.entity.PageQuery;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.time.YearMonth;
 
@@ -30,6 +31,7 @@ import java.time.YearMonth;
  */
 
 @Data
+@EqualsAndHashCode(callSuper=false)
 public class SalaryDetailPageDto extends PageQuery {
 	
     /**

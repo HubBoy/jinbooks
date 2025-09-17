@@ -21,6 +21,7 @@ package com.jinbooks.entity.config.vo;
 import com.jinbooks.entity.config.ConfigSalaryFormula;
 import com.jinbooks.entity.config.dto.ConfigSalaryItem;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.io.Serial;
 import java.util.List;
@@ -32,6 +33,7 @@ import java.util.List;
  */
 
 @Data
+@EqualsAndHashCode(callSuper=false)
 public class ConfigSalaryFormulaVo extends ConfigSalaryFormula {
     @Serial
     private static final long serialVersionUID = 6645770640418865289L;

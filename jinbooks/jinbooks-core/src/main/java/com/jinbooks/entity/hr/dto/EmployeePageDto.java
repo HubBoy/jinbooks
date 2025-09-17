@@ -20,6 +20,7 @@ package com.jinbooks.entity.hr.dto;
 
 import com.jinbooks.entity.PageQuery;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * 员工信息分页查询对象
@@ -29,6 +30,7 @@ import lombok.Data;
  */
 
 @Data
+@EqualsAndHashCode(callSuper=false)
 public class EmployeePageDto extends PageQuery {
     /**
 	 * 

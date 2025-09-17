@@ -19,8 +19,8 @@
 package com.jinbooks.entity.idm.dto;
 
 import com.jinbooks.entity.PageQuery;
-
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * @description:
@@ -29,6 +29,7 @@ import lombok.Data;
  */
 
 @Data
+@EqualsAndHashCode(callSuper=false)
 public class OrgPageDto extends PageQuery {
 	
     /**

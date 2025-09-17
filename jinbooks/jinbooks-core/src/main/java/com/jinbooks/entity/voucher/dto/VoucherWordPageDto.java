@@ -20,6 +20,7 @@ package com.jinbooks.entity.voucher.dto;
 
 import com.jinbooks.entity.PageQuery;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * 凭证字分页查询对象
@@ -29,6 +30,7 @@ import lombok.Data;
  */
 
 @Data
+@EqualsAndHashCode(callSuper=false)
 public class VoucherWordPageDto  extends PageQuery {
     /**
 	 * 

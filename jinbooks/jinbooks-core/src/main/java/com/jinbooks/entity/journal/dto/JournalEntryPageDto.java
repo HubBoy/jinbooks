@@ -20,9 +20,11 @@ package com.jinbooks.entity.journal.dto;
 
 import com.jinbooks.entity.PageQuery;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 
 @Data
+@EqualsAndHashCode(callSuper=false)
 public class JournalEntryPageDto extends PageQuery {
 
     /**

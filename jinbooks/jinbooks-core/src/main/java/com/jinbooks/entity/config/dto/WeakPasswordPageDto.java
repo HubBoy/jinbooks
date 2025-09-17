@@ -21,6 +21,7 @@ package com.jinbooks.entity.config.dto;
 import com.jinbooks.entity.PageQuery;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * @description:
@@ -29,6 +30,7 @@ import lombok.Data;
  */
 
 @Data
+@EqualsAndHashCode(callSuper=false)
 public class WeakPasswordPageDto extends PageQuery {/**
 	 * 
 	 */

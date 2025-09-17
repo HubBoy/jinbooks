@@ -21,8 +21,10 @@ package com.jinbooks.entity.book.vo;
 import com.jinbooks.entity.voucher.VoucherTemplate;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Data
+@EqualsAndHashCode(callSuper=false)
 public class SettlementCarryforwardVo extends VoucherTemplate{
 
 	/**

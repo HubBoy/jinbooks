@@ -24,9 +24,11 @@ import java.io.Serializable;
 
 import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 @Data
+@EqualsAndHashCode(callSuper=false)
 @NoArgsConstructor
 @TableName("JBX_INSTITUTIONS")
 public class Institutions extends BaseEntity implements Serializable {
