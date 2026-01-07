@@ -85,7 +85,8 @@
 
         <template #empty>
           <div class="empty-text">暂无数据</div>
-          <el-button @click="handleAdd(null, 'liability')">立即添加</el-button>
+          <el-button type="primary" @click="handleAdd(null, 'asset')">立即添加资产项</el-button>
+          <el-button type="success" @click="handleAdd(null, 'liability')">立即添加负债和所有者权益项</el-button>
         </template>
       </el-table>
     </el-card>
@@ -398,6 +399,17 @@ function handleAdd(row?: any, assetOrLiability?: string) {
     getSubjectList()
     dialog.visible = true;
     dialog.title = "添加";
+  }else {
+    getSubjectList()
+    level.value = 1
+    form.value.assetOrLiability = assetOrLiability
+    form.value.standardId = queryParams.value.standardId
+    form.value.level = level.value
+    form.value.parentItemCode = null
+    form.value.sortIndex = 1
+
+    dialog.visible = true;
+    dialog.title = "添加跟";
   }
 }
 
