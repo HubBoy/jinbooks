@@ -206,6 +206,7 @@ public class StatementSubjectBalanceServiceImpl implements StatementSubjectBalan
         queryWrapper.eq(StatementSubjectBalance::getBookId, bookId);
         queryWrapper.eq(StatementSubjectBalance::getSubjectCode, code);
         queryWrapper.eq(StatementSubjectBalance::getYearPeriod, yearPeriod);
+        queryWrapper.eq(StatementSubjectBalance::getPeriodType, StatementPeriodTypeEnum.MONTH.getValue());
         StatementSubjectBalance subjectBalance = subjectBalanceMapper.selectOne(queryWrapper);
         // 未查到，创建新记录
         if (subjectBalance == null) {
@@ -410,6 +411,11 @@ public class StatementSubjectBalanceServiceImpl implements StatementSubjectBalan
                 .yearToDateDebit(BigDecimal.ZERO)
                 .closingBalanceCredit(BigDecimal.ZERO)
                 .closingBalanceDebit(BigDecimal.ZERO)
+                .prevBalance(BigDecimal.ZERO)
+                .prevClosingBalanceCredit(BigDecimal.ZERO)
+                .prevClosingBalanceDebit(BigDecimal.ZERO)
+                .prevYearToDateCredit(BigDecimal.ZERO)
+                .prevYearToDateDebit(BigDecimal.ZERO)
                 .isAuxiliary(YesNoEnum.n.name())
                 .isVoucher(YesNoEnum.n.name())
                 .build();

@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
     <el-card class="common-card query-box">
-      <div class="queryForm">
+      <div class="queryForm" style="display: flex;justify-content: space-between;">
         <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch" label-width="68px">
           <el-form-item label="会计准则">
             <el-select v-model="queryParams.standardId" @change="handleQuery" style="width: 200px">
@@ -14,6 +14,10 @@
             </el-select>
           </el-form-item>
         </el-form>
+        <div class="btn-form-right">
+          <el-button type="primary" @click="handleAdd(null, 'asset')">添加一级资产项</el-button>
+          <el-button type="success" @click="handleAdd(null, 'liability')">添加一级负债和所有者权益项</el-button>
+        </div>
       </div>
     </el-card>
     <el-card class="common-card">
@@ -27,7 +31,7 @@
           <template #default="scope">
             <span :style="{'text-indent': scope.row.level + 'em',
              display: 'inline-block', 'margin-right': '30px', fontWeight: scope.row.level === 1 ? 'bold' : ''}">
-              {{scope.row.symbol === '-' ? '减：' : ''}}{{ scope.row.itemName }}
+              {{ scope.row.symbol === '-' ? '减：' : '' }}{{ scope.row.itemName }}
             </span>
           </template>
         </el-table-column>
@@ -40,11 +44,12 @@
                 <el-button type="primary"
                            link @click="handleAdd(scope.row, 'asset')" icon="Plus"></el-button>
               </el-tooltip>
-              <el-tooltip v-if="scope.row.level > 1 || (scope.row.itemCode && !scope.row.itemCode.endsWith('00'))" content="编辑">
+              <el-tooltip v-if="scope.row.level > 1 || (scope.row.itemCode && !scope.row.itemCode.endsWith('00'))"
+                          content="编辑">
                 <el-button type="primary"
                            link @click="handleEdit(scope.row, 'asset')" icon="Edit"></el-button>
               </el-tooltip>
-              <el-tooltip v-if="scope.row.level > 1" content="移除">
+              <el-tooltip content="移除">
                 <el-button type="primary"
                            link @click="handleDel(scope.row, 'asset')" icon="Delete"></el-button>
               </el-tooltip>
@@ -56,7 +61,7 @@
           <template #default="scope">
             <span :style="{'text-indent': scope.row.liabilityLevel + 'em',
              display: 'inline-block', 'margin-right': '30px', fontWeight: scope.row.liabilityLevel === 1 ? 'bold' : ''}">
-              {{scope.row.liabilitySymbol === '-' ? '减：' : ''}}{{ scope.row.liabilityItemName }}
+              {{ scope.row.liabilitySymbol === '-' ? '减：' : '' }}{{ scope.row.liabilityItemName }}
             </span>
           </template>
         </el-table-column>
@@ -71,11 +76,13 @@
                 <el-button type="primary"
                            link @click="handleAdd(scope.row, 'liability')" icon="Plus"></el-button>
               </el-tooltip>
-              <el-tooltip v-if="scope.row.liabilityLevel > 1 || (scope.row.liabilityItemCode && !scope.row.liabilityItemCode.endsWith('00'))" content="编辑">
+              <el-tooltip
+                  v-if="scope.row.liabilityLevel > 1 || (scope.row.liabilityItemCode && !scope.row.liabilityItemCode.endsWith('00'))"
+                  content="编辑">
                 <el-button type="primary"
                            link @click="handleEdit(scope.row, 'liability')" icon="Edit"></el-button>
               </el-tooltip>
-              <el-tooltip v-if="scope.row.liabilityLevel > 1" content="移除">
+              <el-tooltip content="移除">
                 <el-button type="primary"
                            link @click="handleDel(scope.row, 'liability')" icon="Delete"></el-button>
               </el-tooltip>
@@ -85,7 +92,6 @@
 
         <template #empty>
           <div class="empty-text">暂无数据</div>
-          <el-button @click="handleAdd(null, 'liability')">立即添加</el-button>
         </template>
       </el-table>
     </el-card>
@@ -100,8 +106,18 @@
               <el-radio-button label="下级" :value="level + 1"/>
             </el-radio-group>
           </el-form-item>
-          <el-form-item v-if="form.level > 1" label="编码" prop="itemCode">
-            <el-input style="width: 300px" v-model="form.itemCode" placeholder="请输入编码"/>
+          <el-form-item label="编码" v-if="form.level > 1 || emptyPush" prop="itemCode">
+            <div>
+              <el-input style="width: 300px" v-model="form.itemCode" placeholder="请输入编码"/>
+              <div style="line-height: 1.2em;color: #888888;">
+                提示：编码长度4位，编码规则为：xxxx；<br />
+                一级项末尾只允许以00/99结尾；<br />
+                统计项编码规则：xx99_xx99_xx99。
+              </div>
+            </div>
+          </el-form-item>
+          <el-form-item label="名称" v-if="form.level > 1 || emptyPush" prop="itemName">
+            <el-input style="width: 300px" v-model="form.itemName" placeholder="请输入名称"/>
           </el-form-item>
           <el-form-item v-if="form.level === 2" label="计算" prop="symbol">
             <el-radio-group v-model="form.symbol">
@@ -116,10 +132,9 @@
               <el-radio-button label="手动录入" value="2"/>
             </el-radio-group>
           </el-form-item>
-          <el-form-item v-if="form.level > 1" label="名称" prop="itemName">
-            <el-input style="width: 300px" v-model="form.itemName" placeholder="请输入名称"/>
-          </el-form-item>
-          <el-form-item label="行号" prop="sortIndex">
+
+          <el-form-item label="行号" prop="sortIndex"
+                        v-if="form.level > 1 || (form.level===1 && form.itemCode && form.itemCode.endsWith('99'))">
             <el-input-number :min="1" v-model="form.sortIndex" placeholder="请输入"/>
           </el-form-item>
 
@@ -195,7 +210,6 @@
 
 <script setup name="ReportBalanceSheet" lang="ts">
 import {getCurrentInstance, h, ref, reactive, toRefs} from 'vue'
-import bookStore from "@/store/modules/bookStore";
 import {ElForm, FormInstance} from "element-plus";
 import {cascaderSubjectProps} from "@/utils/Subjects"
 import {
@@ -215,15 +229,17 @@ cascaderSubjectPropsOwn.value.checkStrictly = true
 const {t} = useI18n()
 const {proxy} = getCurrentInstance();
 const {account_balance_type} = proxy?.useDict("account_balance_type");
-const currBookStore = bookStore()
 // 会计科目数据
 const subjectList = ref<any>([])
 const balanceSheetList = ref<any>([]);
+const assetsList = ref<Record<string, any>>({});
+const liabilityList = ref<Record<string, any>>({});
 const subjectKeyIdItem = ref<any>({})
 const loading = ref(true);
 const buttonLoading = ref(false);
 const showSearch = ref(true);
 const level = ref(1);
+const emptyPush = ref(false);
 const visibleSubjectStatus = ref(false);
 //会计准则
 const standardList: any = ref<any>([]);
@@ -232,6 +248,7 @@ const dialog = reactive<any>({
   title: ''
 });
 const balanceSheetRef = ref<FormInstance>();
+
 const initFormData: any = {
   standardId: '',
   itemCode: undefined,
@@ -244,6 +261,62 @@ const initFormData: any = {
   symbol: "+",
   rules: []
 }
+
+const checkItemName = async (rule: any, value: any, callback: any) => {
+  if (!value) {
+    return callback(new Error('名称不能为空'));
+  }
+  if (form.value.itemCode && form.value.itemCode.endsWith('99')) {
+    if (!value.startsWith('合计：')) {
+      return callback(new Error('合计项名称必须以“合计：”开头'));
+    }
+    if (value.length < 4) {
+      return callback(new Error('合计项名称长度不能低于4个字符'));
+    }
+  }
+  callback();
+}
+const checkItemCode = async (rule: any, value: any, callback: any) => {
+  if (!value) {
+    return callback(new Error('编码不能为空'));
+  }
+  if (form.value.level === 1) {
+    const codes = value.split('_');
+    if (codes.length === 1) {
+      if (!codes[0].endsWith('00') && !codes[0].endsWith('99')) {
+        return callback(new Error('一级编码格式错误，必须以00/99结尾'));
+      }
+    } else {
+      for (let i = 0; i < codes.length; i++) {
+        if (!codes[i].endsWith('99')) {
+          return callback(new Error('统计项一级编码格式错误，必须以99结尾'));
+        }
+      }
+    }
+  } else {
+    const codes = value.split('_');
+    if (codes.length > 1) {
+      return callback(new Error('编码格式错误，只允许xxxx格式'));
+    }
+    if (codes[0].endsWith('99') || codes[0].endsWith('00')) {
+      return callback(new Error('编码格式错误，不能以00/99结尾'));
+    }
+  }
+
+  if (form.value.assetOrLiability === "asset") {
+    const item = assetsList.value[value]
+    if (item && item.id !== form.value.id) {
+      return callback(new Error('编码已存在'));
+    }
+  } else {
+    const item = liabilityList.value[value]
+    if (item && item.id !== form.value.id) {
+      return callback(new Error('编码已存在'));
+    }
+  }
+
+  callback();
+}
 const data = reactive({
   form: {...initFormData},
   queryParams: {
@@ -251,10 +324,17 @@ const data = reactive({
   },
   rules: {
     itemCode: [
-      {required: true, message: '编码不能为空', trigger: 'blur'}
+      {required: true, message: '编码不能为空', trigger: 'blur'},
+      {
+        pattern: /^(\d{4}|(\d{4}_\d{4})|(\d{4}_\d{4}_\d{4}))$/,
+        message: '编码格式错误，应为xxxx或xxxx_xxxx格式',
+        trigger: 'blur'
+      },
+      {validator: checkItemCode, trigger: 'blur'}
     ],
     itemName: [
-      {required: true, message: '名称不能为空', trigger: 'blur'}
+      {required: true, message: '名称不能为空', trigger: 'blur'},
+      {validator: checkItemName, trigger: 'blur'}
     ],
     assetOrLiability: [
       {required: true, message: '项目类型不能为空', trigger: 'blur'}
@@ -279,8 +359,17 @@ function getList() {
   listConfigBalanceSheet(queryParams.value.standardId).then((response: any) => {
     const list: any = []
     const mapList: any = {}
+    assetsList.value = {}
+    liabilityList.value = {}
     const assets = response.data.assets
     const liability = response.data.liability
+    assets.forEach((item: any, index: number) => {
+      assetsList.value[item.itemCode] = item
+    })
+    liability.forEach((item: any, index: number) => {
+      liabilityList.value[item.itemCode] = item
+    })
+
     const maxData = assets.length > liability.length ? assets : liability
 
     maxData.forEach((item: any, index: number) => {
@@ -394,10 +483,23 @@ function handleAdd(row?: any, assetOrLiability?: string) {
     }
     form.value.standardId = queryParams.value.standardId
     form.value.assetOrLiability = assetOrLiability
-
+    emptyPush.value = false
     getSubjectList()
     dialog.visible = true;
     dialog.title = "添加";
+  } else {
+    emptyPush.value = true
+    getSubjectList()
+    level.value = 1
+    form.value.assetOrLiability = assetOrLiability
+    form.value.standardId = queryParams.value.standardId
+    form.value.level = level.value
+    form.value.parentItemCode = null
+    form.value.sortIndex = null
+    form.value.rule = null
+    form.value.symbol = null
+    dialog.visible = true;
+    dialog.title = "添加跟";
   }
 }
 
