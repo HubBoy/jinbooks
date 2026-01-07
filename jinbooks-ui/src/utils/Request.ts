@@ -161,7 +161,11 @@ service.interceptors.response.use((res: any) => {
         } else if (code === 0) {
             return Promise.resolve(res.data)
         } else {
-            ElMessage({message: msg, type: 'error'})
+            ElMessage({
+                type: 'error',
+                message: msg,
+                dangerouslyUseHTMLString: true
+            });
             return Promise.reject(res.data)
         }
     },

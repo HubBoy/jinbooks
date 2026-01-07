@@ -1,12 +1,12 @@
 /*
  * Copyright [2025] [JinBooks of copyright http://www.jinbooks.com]
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  */
- 
+
 
 
 
@@ -22,8 +22,11 @@
 
 package com.jinbooks.web.security.contorller;
 
+import com.baomidou.mybatisplus.annotation.OrderBy;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import jakarta.validation.Valid;
 
+import org.apache.commons.lang3.ObjectUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +41,8 @@ import com.jinbooks.entity.config.ConfigPasswordPolicy;
 import com.jinbooks.entity.idm.UserInfo;
 import com.jinbooks.persistence.service.ConfigPasswordPolicyService;
 
+import java.util.List;
+
 @RestController
 @RequestMapping(value={"/security/passwordpolicy"})
 public class ConfigPasswordPolicyController {
@@ -48,8 +53,7 @@ public class ConfigPasswordPolicyController {
 
 	@GetMapping(value={"/get"}, produces = {MediaType.APPLICATION_JSON_VALUE})
 	public Message<ConfigPasswordPolicy> get(@CurrentUser UserInfo currentUser){
-		ConfigPasswordPolicy passwordPolicy = configPasswordPolicyService.getById(currentUser.getBookId());
-		return new Message<>(passwordPolicy);
+		return new Message<>(configPasswordPolicyService.getPasswordPolicy());
 	}
 
 	@PutMapping(value={"/update"}, produces = {MediaType.APPLICATION_JSON_VALUE})

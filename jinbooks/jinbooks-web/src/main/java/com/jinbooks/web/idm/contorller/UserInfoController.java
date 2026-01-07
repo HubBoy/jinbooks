@@ -1,12 +1,12 @@
 /*
  * Copyright [2025] [JinBooks of copyright http://www.jinbooks.com]
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  */
- 
+
 
 
 
@@ -41,12 +41,11 @@ import com.jinbooks.constants.ConstsActResult;
 import com.jinbooks.constants.ConstsEntryType;
 import com.jinbooks.constants.ConstsPasswordSetType;
 import com.jinbooks.entity.*;
+import com.jinbooks.entity.config.ConfigPasswordPolicy;
 import com.jinbooks.entity.idm.UserInfo;
 import com.jinbooks.entity.idm.dto.UserInfoPageDto;
-import com.jinbooks.persistence.service.FileStorageService;
-import com.jinbooks.persistence.service.HistorySystemLogsService;
-import com.jinbooks.persistence.service.UserInfoExcelService;
-import com.jinbooks.persistence.service.UserInfoService;
+import com.jinbooks.persistence.service.*;
+import com.jinbooks.persistence.service.impl.PasswordPolicyValidatorServiceImpl;
 import com.jinbooks.validate.AddGroup;
 import com.jinbooks.validate.EditGroup;
 import com.jinbooks.web.WebContext;
@@ -96,12 +95,15 @@ public class UserInfoController {
 
 	@Autowired
 	SecretKeyManager secretKeyManager;
-	
+
 	@Autowired
 	SessionManager sessionManager;
-	
+
 	@Autowired
 	HistorySystemLogsService historySystemLogsService;
+
+	@Autowired
+	ConfigPasswordPolicyService configPasswordPolicyService;
 
 	@GetMapping(value = { "/fetch" }, produces = {MediaType.APPLICATION_JSON_VALUE})
 	public Message<Page<UserInfo>> fetch(@ParameterObject UserInfoPageDto dto, @CurrentUser UserInfo currentUser) {
@@ -158,16 +160,16 @@ public class UserInfoController {
                         principal.getAuthorities()
                 );
 		session.setAuthentication(authenticationToken);
-		
+
 		sessionManager.create(principal.getSessionId(), session);
-		
+
 		if (ObjectUtils.isNotEmpty(userInfoService.switchBook(currentUser))) {
 			 return new Message<>(Message.SUCCESS);
 		} else {
 			 return new Message<>(Message.FAIL);
 		}
 	}
-	
+
 
 	@GetMapping(value = { "/get/{id}" }, produces = {MediaType.APPLICATION_JSON_VALUE})
 	public Message<UserInfo> get(@PathVariable("id") String id) {
@@ -293,6 +295,30 @@ public class UserInfoController {
 		}
 	}
 
+	@PutMapping(value = { "/updatePassword" })
+	public Message<ChangePassword> changePasswod(
+			@RequestBody ChangePassword changePassword,
+			@CurrentUser UserInfo currentUser) {
+		if(!currentUser.getId().equals(changePassword.getUserId())){
+			return null;
+		}
+		changePassword.setUsername(currentUser.getUsername());
+		changePassword.setPasswordSetType(ConstsPasswordSetType.PASSWORD_NORMAL);
+		if(userInfoService.updatePassword(changePassword)) {
+			historySystemLogsService.log(
+					ConstsEntryType.USERINFO,
+					changePassword,
+					ConstsAct.CHANGE_PASSWORD,
+					ConstsActResult.SUCCESS,
+					currentUser);
+			return new Message<>(Message.SUCCESS);
+		} else {
+			String message = (String) WebContext.getAttribute(PasswordPolicyValidatorServiceImpl.PASSWORD_POLICY_VALIDATE_RESULT);
+			logger.info("-message: {}",message);
+			return new Message<>(Message.ERROR,message);
+		}
+	}
+
     @RequestMapping(value = "/import")
     public Message<UserInfo> importUsers(
     		@ModelAttribute("excelImportFile")ExcelImport excelImportFile,
@@ -328,5 +354,13 @@ public class UserInfoController {
 		 SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 	        dateFormat.setLenient(false);
 	        binder.registerCustomEditor(Date.class, new CustomDateEditor(dateFormat, true));
+	}
+
+	@GetMapping(value={"/passwordpolicy"})
+	public Message<ConfigPasswordPolicy> passwordpolicy(@CurrentUser UserInfo currentUser){
+		ConfigPasswordPolicy passwordPolicy = configPasswordPolicyService.getPasswordPolicy();
+		//构建密码强度说明
+		configPasswordPolicyService.buildTipMessage(passwordPolicy);
+		return new Message<>(passwordPolicy);
 	}
 }

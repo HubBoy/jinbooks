@@ -213,7 +213,7 @@ export const validatePass: any = (rule: any, value: any, callback: any, policy: 
     console.log(policy)
 
     if (value === '') {
-        callback(new Error(t('user.rule.pwd')));
+        callback(new Error("密码不能为空"));
         return;
     }
 
@@ -223,37 +223,43 @@ export const validatePass: any = (rule: any, value: any, callback: any, policy: 
     if (data.minLength !== 0 && data.maxLength !== 0) {
         let inputLength: any = value.length;
         if (inputLength < data.minLength || inputLength > data.maxLength) {
-            errors.push(`${t('user.rule.pwd1')}${data.minLength}-${data.maxLength}${t('user.rule.pwd2')}`);
+            errors.push(`密码长度需要在${data.minLength}-${data.maxLength}之间`);
         }
     }
-    if (data.isLowerCase === 1) {
+    if (data.lowerCase === 1) {
         // 必须包含小写字母
         if (!/[a-z]/.test(value)) {
-            errors.push(t('user.rule.pwd3'));
+            errors.push("必须包含小写字母");
+        }
+    }
+    if (data.upperCase === 1) {
+        // 必须包含大写字母
+        if (!/[A-Z]/.test(value)) {
+            errors.push("必须包含大写字母");
         }
     }
 
-    if (data.isDigit === 1) {
+    if (data.digits === 1) {
         // 必须包含阿拉伯数字
         if (!/\d/.test(value)) {
-            errors.push(t('user.rule.pwd4'));
+            errors.push("必须包含阿拉伯数字");
         }
     }
 
-    if (data.isSpecial === 1) {
+    if (data.specialChar === 1) {
         // 必须包含标点符号
         if (!/[!@#$%^&*()_+={}\[\]:;<>,.?~\\-]/.test(value)) {
-            errors.push(t('user.rule.pwd5'));
+            errors.push("必须包含特殊字符");
         }
     }
 
     if (/[\u4e00-\u9fa5]/.test(value)) {
         // 包含中文字符
-        errors.push(t('user.rule.pwd6'));
+        errors.push("不能包含中文字符");
     }
 
     if (/\s/.test(value)) {
-        errors.push(t('user.rule.pwd7'));
+        errors.push("不能包含空格");
     }
 
     if (errors.length > 0) {

@@ -69,7 +69,7 @@ export function validateCaptcha(query: any): any {
 //获取所有的策略
 export function getPwdPolicy(): any {
     return request({
-        url: `/policy/password`,
+        url: `/users/passwordpolicy`,
         method: 'get',
         headers: {
             isToken: false,

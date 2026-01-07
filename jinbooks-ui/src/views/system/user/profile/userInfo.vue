@@ -1,21 +1,21 @@
 <template>
    <el-form ref="userRef" :model="form" :rules="rules" label-width="80px">
-     <el-form-item :label="t('user.username')" prop="username">
+     <el-form-item label="登录名" prop="username">
        <el-input v-model="form.username" disabled/>
      </el-form-item>
-     <el-form-item :label="t('user.displayName')" prop="displayName">
+     <el-form-item label="显示名称" prop="displayName">
        <el-input v-model="form.displayName" maxlength="20" />
      </el-form-item>
-      <el-form-item :label="t('user.nickname')" prop="nickName">
+      <el-form-item label="昵称" prop="nickName">
          <el-input v-model="form.nickName" maxlength="20" />
       </el-form-item>
-      <el-form-item :label="t('user.mobile')" prop="mobile">
+      <el-form-item label="手机号码" prop="mobile">
          <el-input v-model="form.mobile" />
       </el-form-item>
-      <el-form-item :label="t('user.email')" prop="email">
+      <el-form-item label="邮箱" prop="email">
          <el-input v-model="form.email" />
       </el-form-item>
-      <el-form-item :label="t('user.gender')">
+<!--      <el-form-item :label="t('user.gender')">
         <el-radio-group v-model="form.gender">
           <el-radio-button v-for="item in genderOptions"
                            :label="item.label"
@@ -33,10 +33,10 @@
            value-format="YYYY-MM-DD"
            :placeholder="t('profile.rule.birthDate')">
        </el-date-picker>
-     </el-form-item>
+     </el-form-item>-->
       <el-form-item>
-      <el-button type="primary" @click="submit">{{t('text.save')}}</el-button>
-      <el-button type="danger" @click="close">{{t('text.close')}}</el-button>
+      <el-button type="primary" @click="submit">保存</el-button>
+      <el-button type="danger" @click="close">关闭</el-button>
       </el-form-item>
    </el-form>
 </template>
@@ -90,7 +90,7 @@ function submit(): any {
   proxy.$refs.userRef.validate((valid: any) =>  {
     if (valid) {
       updateUser(form.value).then((res: any) =>  {
-        if (res.code === 200) {
+        if (res.code === 0) {
           modal.msgSuccess(t('org.success.update'));
           emit('profileDisplay', form.value);
         } else {
@@ -116,7 +116,11 @@ watch(() => props.user, (user: any) =>  {
       mobile: user.mobile,
       email: user.email,
       gender: user.gender,
-      birthDate: user.birthDate
+      birthDate: user.birthDate,
+      userType: user.userType,
+      sortIndex: user.sortIndex,
+      userState: user.userState,
+      id: user.id
     };
   }
 },{ immediate: true });

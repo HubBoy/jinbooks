@@ -1,12 +1,12 @@
 /*
  * Copyright [2025] [JinBooks of copyright http://www.jinbooks.com]
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  */
- 
+
 
 
 
@@ -54,7 +54,7 @@ import com.jinbooks.persistence.mapper.ConfigPasswordPolicyMapper;
 import com.jinbooks.persistence.service.ConfigPasswordPolicyService;
 
 @Repository
-public class ConfigPasswordPolicyServiceImpl  extends ServiceImpl<ConfigPasswordPolicyMapper,ConfigPasswordPolicy> implements ConfigPasswordPolicyService {
+public class ConfigPasswordPolicyServiceImpl extends ServiceImpl<ConfigPasswordPolicyMapper,ConfigPasswordPolicy> implements ConfigPasswordPolicyService {
 	private static final Logger logger = LoggerFactory.getLogger(ConfigPasswordPolicyServiceImpl.class);
 
     @Autowired
@@ -123,15 +123,25 @@ public class ConfigPasswordPolicyServiceImpl  extends ServiceImpl<ConfigPassword
         if(passwordPolicy.getQwerty()>0) {
             passwordPolicyRuleList.add(new IllegalSequenceRule(EnglishSequenceData.USQwerty, 4, false));
         }
-     
+
         return passwordPolicyRuleList;
     }
 
     @Override
+    public void buildTipMessage(ConfigPasswordPolicy passwordPolicy) {
+
+    }
+
+    @Override
     public ConfigPasswordPolicy  getPasswordPolicy() {
-    	LambdaQueryWrapper<ConfigPasswordPolicy> lambdaQueryWrapper = new LambdaQueryWrapper<ConfigPasswordPolicy>();
-    	lambdaQueryWrapper.isNotNull(ConfigPasswordPolicy::getId);
-    	return this.getOne(lambdaQueryWrapper);
+        LambdaQueryWrapper<ConfigPasswordPolicy> wrapper = new LambdaQueryWrapper<>();
+        wrapper.orderByAsc(ConfigPasswordPolicy::getId);
+        ConfigPasswordPolicy configPasswordPolicy = null;
+        List<ConfigPasswordPolicy> list = super.list(wrapper);
+        if (ObjectUtils.isNotEmpty(list)) {
+            configPasswordPolicy = list.get(0);
+        }
+        return configPasswordPolicy;
     }
 
     public Message<String> validateUserPassword(UserInfo userInfo) {

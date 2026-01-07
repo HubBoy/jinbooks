@@ -1,12 +1,12 @@
 /*
  * Copyright [2025] [JinBooks of copyright http://www.jinbooks.com]
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  */
- 
+
 
 
 
@@ -26,6 +26,7 @@ import java.util.List;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.jinbooks.entity.Message;
 import com.jinbooks.entity.idm.dto.UserInfoPageDto;
+import com.jinbooks.web.WebContext;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -109,7 +110,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     public void checkUsernameDuplicate(String username, String id) {
         LambdaQueryWrapper<UserInfo> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(UserInfo::getUsername, username);
-        wrapper.notIn(UserInfo::getId, id);
+        wrapper.ne(UserInfo::getId, id);
         List<UserInfo> query = super.list(wrapper);
         if (ObjectUtils.isNotEmpty(query)) {
             throw new BusinessException(
@@ -130,7 +131,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         }
         LambdaQueryWrapper<UserInfo> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(UserInfo::getMobile, mobile);
-        wrapper.notIn(UserInfo::getId, id);
+        wrapper.ne(UserInfo::getId, id);
         List<UserInfo> query = super.list(wrapper);
         if (ObjectUtils.isNotEmpty(query)) {
             throw new BusinessException(
@@ -152,7 +153,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
         LambdaQueryWrapper<UserInfo> wrapper = new LambdaQueryWrapper<UserInfo>();
         wrapper.eq(UserInfo::getEmail, email);
-        wrapper.notIn(UserInfo::getId, id);
+        wrapper.ne(UserInfo::getId, id);
         List<UserInfo> query = super.list(wrapper);
         if (ObjectUtils.isNotEmpty(query)) {
             throw new BusinessException(
@@ -262,4 +263,37 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 	public boolean switchBook(UserInfo userInfo) {
 		return getMapper().switchBook(userInfo) > 0;
 	}
+
+    @Override
+    public boolean updatePassword(ChangePassword changePassword) {
+        try {
+            WebContext.setAttribute(PasswordPolicyValidatorServiceImpl.PASSWORD_POLICY_VALIDATE_RESULT, "");
+            UserInfo userInfo = this.findByUsername(changePassword.getUsername());
+            if(changePassword.getPassword().equals(changePassword.getConfirmPassword())){
+                if(StringUtils.isNotBlank(changePassword.getOldPassword()) &&
+                        passwordEncoder.matches(changePassword.getOldPassword(), userInfo.getPassword())){
+                    if(changePassword(changePassword,true) ){
+                        return true;
+                    }
+                    return false;
+                }else {
+                    if(StringUtils.isNotBlank(changePassword.getOldPassword())&&
+                            passwordEncoder.matches(changePassword.getPassword(), userInfo.getPassword())) {
+                        WebContext.setAttribute(PasswordPolicyValidatorServiceImpl.PASSWORD_POLICY_VALIDATE_RESULT,
+                                WebContext.getI18nValue("PasswordPolicy.OLD_PASSWORD_MATCH"));
+                    }else {
+                        WebContext.setAttribute(PasswordPolicyValidatorServiceImpl.PASSWORD_POLICY_VALIDATE_RESULT,
+                                WebContext.getI18nValue("PasswordPolicy.OLD_PASSWORD_NOT_MATCH"));
+                    }
+                }
+            }else {
+                WebContext.setAttribute(PasswordPolicyValidatorServiceImpl.PASSWORD_POLICY_VALIDATE_RESULT,
+                        WebContext.getI18nValue("PasswordPolicy.CONFIRMPASSWORD_NOT_MATCH"));
+            }
+        } catch (Exception e) {
+            throw new BusinessException(50001, e.getMessage());
+        }
+
+        return false;
+    }
 }

@@ -92,6 +92,15 @@ export function changePass(data : any): any {
   })
 }
 
+//修改密码-个人中心
+export function updatePassword(data : any): any {
+  return request({
+    url: '/users/updatePassword',
+    method: 'put',
+    data: data
+  })
+}
+
 //获取用户岗位信息
 export function getUsersPosts(query : any): any {
   return request({

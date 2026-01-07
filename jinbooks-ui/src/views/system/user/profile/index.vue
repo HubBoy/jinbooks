@@ -5,7 +5,7 @@
         <el-card class="box-card">
           <template v-slot:header>
             <div class="clearfix">
-              <span>{{t('profile.personal')}}</span>
+              <span>个人信息</span>
             </div>
           </template>
           <div>
@@ -15,7 +15,7 @@
             <ul class="list-group list-group-striped">
               <li class="list-group-item">
                 <svg-icon icon-class="user"/>
-                {{t('user.username')}}
+                登录名
                 <div class="pull-right">
                   <span v-if="state.user.username && state.user.username.length <= 20">{{ state.user.username }}</span>
                   <span v-else>
@@ -27,30 +27,30 @@
 
               </li>
               <li class="list-group-item">
-                <span>{{t('user.displayName')}}</span>
+                <span>显示名称</span>
                 <div class="pull-right">{{ state.user.displayName }}</div>
               </li>
               <li class="list-group-item">
-                <span>{{t('user.nickname')}}</span>
+                <span>昵称</span>
                 <div class="pull-right">{{ state.user.nickName }}</div>
               </li>
-              <li class="list-group-item">
+<!--              <li class="list-group-item">
                 <svg-icon icon-class="color"/>
-                {{t('user.gender')}}
+                性别
                 <div class="pull-right">
-                  <span v-if="state.user.gender === 1">{{t('profile.male')}}</span>
-                  <span v-else-if="state.user.gender === 2">{{t('profile.female')}}</span>
-                  <span v-else>{{t('profile.other')}}</span>
+                  <span v-if="state.user.gender === 1">男</span>
+                  <span v-else-if="state.user.gender === 2">女</span>
+                  <span v-else>其他</span>
                 </div>
-              </li>
+              </li>-->
               <li class="list-group-item">
                 <svg-icon icon-class="phone"/>
-                {{t('user.mobile')}}
+                手机
                 <div class="pull-right">{{ state.user.mobile }}</div>
               </li>
               <li class="list-group-item">
                 <svg-icon icon-class="email"/>
-                {{t('user.email')}}
+                邮箱
                 <div class="pull-right">
                   <span v-if="state.user.email && state.user.email.length <= 20">{{ state.user.email }}</span>
                   <span v-else>
@@ -60,21 +60,21 @@
                   </span>
                 </div>
               </li>
-              <li class="list-group-item">
+<!--              <li class="list-group-item">
                 <svg-icon icon-class="tree"/>
                 {{t('user.belong')}}
                 <div class="pull-right">{{ state.user.departmentName }}</div>
-              </li>
-              <li class="list-group-item">
+              </li>-->
+<!--              <li class="list-group-item">
                 <svg-icon icon-class="guide"/>
                 {{t('org.from')}}
                 <dict-tag class="pull-right" :options="sys_data_object_from" :value="state.user.objectFrom"/>
-              </li>
-              <li class="list-group-item">
+              </li>-->
+<!--              <li class="list-group-item">
                 <svg-icon icon-class="date"/>
                 {{t('user.birthDate')}}
                 <div class="pull-right">{{ state.user.birthDate }}</div>
-              </li>
+              </li>-->
             </ul>
           </div>
         </el-card>
@@ -83,15 +83,15 @@
         <el-card>
           <template v-slot:header>
             <div class="clearfix">
-              <span>{{t('profile.basic')}}</span>
+              <span>修改信息</span>
             </div>
           </template>
           <el-tabs v-model="activeTab">
-            <el-tab-pane :label="t('profile.basic')" name="userinfo">
+            <el-tab-pane label="基本信息" name="userinfo">
               <userInfo :user="state.user" :genderOptions="sys_user_sex" @profileDisplay="profileDisplay"/>
             </el-tab-pane>
-            <el-tab-pane :label="t('profile.updatePwd')" name="resetPwd">
-              <resetPwd :pwdPolicy="pwdPolicy"/>
+            <el-tab-pane label="密码修改" name="resetPwd">
+              <resetPwd :user="state.user" :pwdPolicy="pwdPolicy"/>
             </el-tab-pane>
           </el-tabs>
         </el-card>
@@ -108,11 +108,11 @@ import resetPwd from "./resetPwd.vue";
 import {currentUser, getPwdPolicy} from "@/api/login";
 import {ref, getCurrentInstance, reactive, toRefs, watch, defineComponent} from "vue";
 import i18n from '@/languages'
+import {ElForm} from "element-plus";
 
 const {t} = i18n.global;
 const {proxy} = getCurrentInstance()!;
 const {sys_data_object_from, sys_user_sex} = proxy!.useDict("sys_data_object_from", "sys_user_sex");
-
 const activeTab: any = ref("userinfo");
 const state: any = reactive({
   user: {},
@@ -130,7 +130,7 @@ function getUser(): any {
 //获取密码策略
 function passwordPolicy(): any {
   getPwdPolicy().then((res: any) =>  {
-    if (res.code === 200) {
+    if (res.code === 0) {
       pwdPolicy.value = res.data;
     } else {
       modal.msgError(t('profile.pwdPolicy'))
