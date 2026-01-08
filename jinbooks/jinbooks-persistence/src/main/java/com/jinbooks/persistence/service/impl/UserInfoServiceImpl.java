@@ -110,7 +110,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     public void checkUsernameDuplicate(String username, String id) {
         LambdaQueryWrapper<UserInfo> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(UserInfo::getUsername, username);
-        wrapper.ne(UserInfo::getId, id);
+        if (StringUtils.isNotEmpty(id)) {
+            wrapper.ne(UserInfo::getId, id);
+        }
         List<UserInfo> query = super.list(wrapper);
         if (ObjectUtils.isNotEmpty(query)) {
             throw new BusinessException(
@@ -131,7 +133,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         }
         LambdaQueryWrapper<UserInfo> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(UserInfo::getMobile, mobile);
-        wrapper.ne(UserInfo::getId, id);
+        if (StringUtils.isNotEmpty(id)) {
+            wrapper.ne(UserInfo::getId, id);
+        }
         List<UserInfo> query = super.list(wrapper);
         if (ObjectUtils.isNotEmpty(query)) {
             throw new BusinessException(
@@ -153,7 +157,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
         LambdaQueryWrapper<UserInfo> wrapper = new LambdaQueryWrapper<UserInfo>();
         wrapper.eq(UserInfo::getEmail, email);
-        wrapper.ne(UserInfo::getId, id);
+        if (StringUtils.isNotEmpty(id)) {
+            wrapper.ne(UserInfo::getId, id);
+        }
         List<UserInfo> query = super.list(wrapper);
         if (ObjectUtils.isNotEmpty(query)) {
             throw new BusinessException(
