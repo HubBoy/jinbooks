@@ -109,19 +109,7 @@ function close(): any {
 // 回显当前登录用户信息
 watch(() => props.user, (user: any) =>  {
   if (user) {
-    form.value = {
-      username: user.username,
-      displayName: user.displayName,
-      nickName: user.nickName,
-      mobile: user.mobile,
-      email: user.email,
-      gender: user.gender,
-      birthDate: user.birthDate,
-      userType: user.userType,
-      sortIndex: user.sortIndex,
-      userState: user.userState,
-      id: user.id
-    };
+    form.value = user
   }
 },{ immediate: true });
 </script>
