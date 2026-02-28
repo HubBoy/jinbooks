@@ -27,7 +27,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 
 import com.jinbooks.web.InitializeContext;
@@ -42,7 +41,6 @@ import com.jinbooks.web.WebContext;
 @SpringBootApplication
 public class JinBooksApplication extends SpringBootServletInitializer {
 	private static final Logger _logger = LoggerFactory.getLogger(JinBooksApplication.class);
-
 	public static void main(String[] args) {
 		_logger.info("Start JinBooks Application ...");
 	    ProductEnvironment.listEnvVars();
@@ -52,11 +50,6 @@ public class JinBooksApplication extends SpringBootServletInitializer {
 		_logger.info("JinBooks at {}" , new DateTime());
 		_logger.info("JinBooks Port {}",WebContext.getServerPort());
 		_logger.info("JinBooks started.");
-	}
-
-	@Override
-	protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
-		return application.sources(JinBooksApplication.class);
 	}
 	
 }
